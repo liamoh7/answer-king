@@ -7,6 +7,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Entity
 @Table(name = "T_ITEM")
@@ -68,5 +69,21 @@ public class Item {
 
     public void setOrder(Order order) {
         this.order = order;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Item)) return false;
+        Item item = (Item) o;
+        return Objects.equals(id, item.id) &&
+                Objects.equals(name, item.name) &&
+                Objects.equals(price, item.price) &&
+                Objects.equals(order, item.order);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, price, order);
     }
 }

@@ -1,26 +1,29 @@
 package answer.king.service;
 
-import java.util.List;
-
+import answer.king.model.Item;
+import answer.king.repo.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import answer.king.model.Item;
-import answer.king.repo.ItemRepository;
+import java.util.List;
 
 @Service
 @Transactional
 public class ItemService {
 
-	@Autowired
-	private ItemRepository itemRepository;
+    private final ItemRepository itemRepository;
 
-	public List<Item> getAll() {
-		return itemRepository.findAll();
-	}
+    @Autowired
+    public ItemService(ItemRepository itemRepository) {
+        this.itemRepository = itemRepository;
+    }
 
-	public Item save(Item item) {
-		return itemRepository.save(item);
-	}
+    public List<Item> getAll() {
+        return itemRepository.findAll();
+    }
+
+    public Item save(Item item) {
+        return itemRepository.save(item);
+    }
 }
