@@ -1,6 +1,7 @@
 package answer.king.model;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class Receipt {
 
@@ -32,4 +33,18 @@ public class Receipt {
 
 		return payment.subtract(totalOrderPrice);
 	}
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Receipt)) return false;
+        Receipt receipt = (Receipt) o;
+        return Objects.equals(payment, receipt.payment) &&
+                Objects.equals(order, receipt.order);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(payment, order);
+    }
 }

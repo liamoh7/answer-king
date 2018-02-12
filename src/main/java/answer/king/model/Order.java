@@ -1,14 +1,8 @@
 package answer.king.model;
 
+import javax.persistence.*;
 import java.util.List;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import java.util.Objects;
 
 @Entity
 @Table(name = "T_ORDER")
@@ -45,5 +39,21 @@ public class Order {
 
 	public void setItems(List<Item> items) {
 		this.items = items;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof Order)) return false;
+		Order order = (Order) o;
+		return Objects.equals(id, order.id) &&
+				Objects.equals(paid, order.paid) &&
+				Objects.equals(items, order.items);
+	}
+
+	@Override
+	public int hashCode() {
+
+		return Objects.hash(id, paid, items);
 	}
 }
