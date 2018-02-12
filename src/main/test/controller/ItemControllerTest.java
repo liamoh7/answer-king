@@ -40,7 +40,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    public void test_get_all_success() {
+    public void testGetAllSuccess() {
         final List<Item> items = Arrays.asList(new Item(), new Item());
         when(mockService.getAll()).thenReturn(items);
 
@@ -53,7 +53,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    public void test_get_all_not_found_when_null() {
+    public void testGetAllNotFoundWhenNull() {
         when(mockService.getAll()).thenReturn(null);
 
         ResponseEntity<List<Item>> response = itemController.getAll();
@@ -64,7 +64,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    public void test_get_all_empty_returns_success() {
+    public void testGetAllEmptyReturnsSuccess() {
         List<Item> items = new ArrayList<>();
         when(mockService.getAll()).thenReturn(items);
 
@@ -78,7 +78,7 @@ public class ItemControllerTest {
 
 
     @Test
-    public void test_create_valid_data() {
+    public void testCreateValidData() {
         Item testItem = new Item("Test Item", BigDecimal.ONE, new Order());
         when(mockService.save(testItem)).thenReturn(testItem);
 
@@ -91,56 +91,56 @@ public class ItemControllerTest {
     }
 
     @Test
-    public void test_invalid_name_with_null() {
+    public void testInvalidNameWithNull() {
         Item item = new Item(null, BigDecimal.ONE, new Order());
         itemController.create(item);
         validateWithViolations(item);
     }
 
     @Test
-    public void test_invalid_name_with_invalid_length() {
+    public void testInvalidNameWithInvalidLength() {
         Item item = new Item("", BigDecimal.ONE, new Order());
         itemController.create(item);
         validateWithViolations(item);
     }
 
     @Test
-    public void test_invalid_price_with_null() {
+    public void testInvalidPriceWithNull() {
         Item item = new Item("Item 1", null, new Order());
         itemController.create(item);
         validateWithViolations(item);
     }
 
     @Test
-    public void test_invalid_price_too_many_digits() {
+    public void testInvalidPriceTooManyDigits() {
         Item item = new Item("Item 1", new BigDecimal("9999999999999999"), new Order());
         itemController.create(item);
         validateWithViolations(item);
     }
 
     @Test
-    public void test_invalid_price_too_many_decimals() {
+    public void testInvalidPriceTooManyDecimals() {
         Item item = new Item("Item 1", new BigDecimal("10.000"), new Order());
         itemController.create(item);
         validateWithViolations(item, 1);
     }
 
     @Test
-    public void test_price_with_no_decimals() {
+    public void testPriceWithNoDecimals() {
         Item item = new Item("Item 1", new BigDecimal("10"), new Order());
         itemController.create(item);
         validateWithNoViolations(item);
     }
 
     @Test
-    public void test_price_with_decimals() {
+    public void testPriceWithDecimals() {
         Item item = new Item("Item 1", new BigDecimal("10.00"), null);
         itemController.create(item);
         validateWithNoViolations(item);
     }
 
     @Test
-    public void test_null_order() {
+    public void testNullOrder() {
         Item item = new Item("Item 1", new BigDecimal("10.00"), new Order());
         itemController.create(item);
         validateWithNoViolations(item);
