@@ -1,4 +1,4 @@
-package service;
+package controller;
 
 import answer.king.controller.ItemController;
 import answer.king.model.Item;
