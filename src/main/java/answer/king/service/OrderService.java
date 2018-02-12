@@ -16,11 +16,14 @@ import java.util.List;
 @Transactional
 public class OrderService {
 
-    @Autowired
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
+    private final ItemRepository itemRepository;
 
     @Autowired
-    private ItemRepository itemRepository;
+    public OrderService(OrderRepository orderRepository, ItemRepository itemRepository) {
+        this.orderRepository = orderRepository;
+        this.itemRepository = itemRepository;
+    }
 
     public List<Order> getAll() {
         return orderRepository.findAll();
@@ -30,21 +33,23 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public Order addItem(Long id, Long itemId) throws NullPointerException {
-        Order order = orderRepository.findOne(id);
-        Item item = itemRepository.findOne(itemId);
+    public Order addItem(long id, long itemId) {
+        final Order order = orderRepository.findOne(id);
+        final Item item = itemRepository.findOne(itemId);
 
         if (order == null || item == null) {
-            throw new NullPointerException();
+            return null;
         }
 
+        // map the relationship between item & order
         item.setOrder(order);
         order.getItems().add(item);
 
+        // items are persisted through cascading on mapping
         return orderRepository.save(order);
     }
 
-    public Receipt pay(Long id, BigDecimal payment) {
+    public Receipt pay(long id, BigDecimal payment) {
         Order order = orderRepository.findOne(id);
 
         Receipt receipt = new Receipt();
