@@ -1,64 +1,72 @@
 package answer.king.model;
 
-import java.math.BigDecimal;
-
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.validator.constraints.Length;
+
+import javax.persistence.*;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "T_ITEM")
 public class Item {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
-	private String name;
+    @NotNull
+    @Length(min = 1)
+    private String name;
 
-	private BigDecimal price;
+    @NotNull
+    @Digits(integer = 15, fraction = 2)
+    private BigDecimal price;
 
-	@JsonIgnore
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "ORDER_ID")
-	private Order order;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ORDER_ID")
+    private Order order;
 
-	public Long getId() {
-		return id;
-	}
+    public Item() {
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public Item(String name, BigDecimal price, Order order) {
+        this.name = name;
+        this.price = price;
+        this.order = order;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public BigDecimal getPrice() {
-		return price;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setPrice(BigDecimal price) {
-		this.price = price;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public Order getOrder() {
-		return order;
-	}
+    public BigDecimal getPrice() {
+        return price;
+    }
 
-	public void setOrder(Order order) {
-		this.order = order;
-	}
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
 }
