@@ -19,6 +19,10 @@ public class ItemService {
         this.itemRepository = itemRepository;
     }
 
+    public Item get(long id) {
+        return itemRepository.findOne(id);
+    }
+
     public List<Item> getAll() {
         return itemRepository.findAll();
     }
