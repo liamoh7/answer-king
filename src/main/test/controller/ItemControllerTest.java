@@ -2,6 +2,7 @@ package controller;
 
 import answer.king.controller.ItemController;
 import answer.king.dto.ItemDto;
+import answer.king.dto.OrderDto;
 import answer.king.service.ItemService;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +37,31 @@ public class ItemControllerTest {
     public void setUp() {
         itemController = new ItemController(mockService);
         validator = Validation.buildDefaultValidatorFactory().getValidator();
+    }
+
+    @Test
+    public void testGet() {
+        final ItemDto expectedItem = new ItemDto("Test 1", BigDecimal.ZERO, new OrderDto());
+        when(mockService.get(anyLong())).thenReturn(expectedItem);
+
+        final ResponseEntity<ItemDto> response = itemController.get(0L);
+
+        assertEquals(expectedItem, response.getBody());
+        assertTrue(response.getStatusCode() == HttpStatus.OK);
+        verify(mockService, times(1)).get(anyLong());
+        verifyNoMoreInteractions(mockService);
+    }
+
+    @Test
+    public void testGetInvalidId() {
+        when(mockService.get(anyLong())).thenReturn(null);
+
+        final ResponseEntity<ItemDto> response = itemController.get(-1L);
+
+        assertNull(response.getBody());
+        assertTrue(response.getStatusCode() == HttpStatus.NOT_FOUND);
+        verify(mockService, times(1)).get(anyLong());
+        verifyNoMoreInteractions(mockService);
     }
 
     @Test
@@ -88,6 +114,17 @@ public class ItemControllerTest {
         validateWithNoViolations(item);
         assertTrue(response.getStatusCode() == HttpStatus.CREATED);
         assertEquals(response.getHeaders().getLocation(), URI.create("/item/0"));
+        verify(mockService, times(1)).save(any(ItemDto.class));
+        verifyNoMoreInteractions(mockService);
+    }
+
+    @Test
+    public void testCreateReturnsNull() {
+        when(mockService.save(any(ItemDto.class))).thenReturn(null);
+
+        final ResponseEntity<ItemDto> response = itemController.create(new ItemDto());
+
+        assertTrue(response.getStatusCode() == HttpStatus.BAD_REQUEST);
         verify(mockService, times(1)).save(any(ItemDto.class));
         verifyNoMoreInteractions(mockService);
     }
