@@ -1,4 +1,4 @@
-package answer.king.model;
+package answer.king.entity;
 
 import javax.persistence.*;
 import javax.validation.constraints.Digits;

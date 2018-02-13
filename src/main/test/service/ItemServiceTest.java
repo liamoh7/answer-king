@@ -1,6 +1,6 @@
 package service;
 
-import answer.king.model.Item;
+import answer.king.entity.Item;
 import answer.king.repo.ItemRepository;
 import answer.king.service.ItemService;
 import org.junit.After;

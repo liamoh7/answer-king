@@ -1,7 +1,7 @@
 package controller;
 
 import answer.king.controller.ItemController;
-import answer.king.model.Item;
+import answer.king.entity.Item;
 import answer.king.service.ItemService;
 import org.junit.Before;
 import org.junit.runner.RunWith;

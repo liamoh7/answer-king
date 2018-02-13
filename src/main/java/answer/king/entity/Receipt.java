@@ -1,4 +1,4 @@
-package answer.king.model;
+package answer.king.entity;
 
 import java.math.BigDecimal;
 import java.util.Objects;

@@ -1,7 +1,7 @@
 package answer.king.controller;
 
-import answer.king.model.Order;
-import answer.king.model.Receipt;
+import answer.king.entity.Order;
+import answer.king.entity.Receipt;
 import answer.king.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

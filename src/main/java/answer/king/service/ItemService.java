@@ -1,6 +1,6 @@
 package answer.king.service;
 
-import answer.king.model.Item;
+import answer.king.entity.Item;
 import answer.king.repo.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

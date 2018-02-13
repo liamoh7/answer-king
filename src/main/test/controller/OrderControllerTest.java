@@ -1,8 +1,8 @@
 package controller;
 
 import answer.king.controller.OrderController;
-import answer.king.model.Order;
-import answer.king.model.Receipt;
+import answer.king.entity.Order;
+import answer.king.entity.Receipt;
 import answer.king.service.OrderService;
 import org.junit.After;
 import org.junit.Before;

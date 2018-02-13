@@ -1,8 +1,8 @@
 package answer.king.service;
 
-import answer.king.model.Item;
-import answer.king.model.Order;
-import answer.king.model.Receipt;
+import answer.king.entity.Item;
+import answer.king.entity.Order;
+import answer.king.entity.Receipt;
 import answer.king.repo.ItemRepository;
 import answer.king.repo.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;

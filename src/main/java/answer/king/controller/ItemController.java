@@ -1,6 +1,6 @@
 package answer.king.controller;
 
-import answer.king.model.Item;
+import answer.king.entity.Item;
 import answer.king.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

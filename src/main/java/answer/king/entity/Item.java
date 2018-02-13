@@ -1,4 +1,4 @@
-package answer.king.model;
+package answer.king.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.Length;
