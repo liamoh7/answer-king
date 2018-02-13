@@ -1,8 +1,12 @@
 package service;
 
+import answer.king.dto.ItemDto;
+import answer.king.dto.OrderDto;
 import answer.king.entity.Item;
+import answer.king.entity.Order;
 import answer.king.repo.ItemRepository;
 import answer.king.service.ItemService;
+import answer.king.service.mapper.Mapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,12 +15,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -24,49 +27,91 @@ public class ItemServiceTest {
 
     @Mock
     private ItemRepository mockRepository;
+    @Mock
+    private Mapper<ItemDto, Item> mockMapper;
     private ItemService itemService;
 
     @Before
     public void setUp() {
-        itemService = new ItemService(mockRepository);
+        itemService = new ItemService(mockRepository, mockMapper);
     }
 
     @Test
     public void testFindAllWithItems() {
-        final List<Item> items = Arrays.asList(new Item(), new Item());
-        when(mockRepository.findAll()).thenReturn(items);
+        final List<Item> entities = Arrays.asList(
+                new Item("Test 1", BigDecimal.ZERO, new Order()),
+                new Item("Test 3", BigDecimal.ONE, new Order()),
+                new Item("Test 2", new BigDecimal("210.00"), new Order()));
 
-        final List<Item> actualItems = itemService.getAll();
+        final List<ItemDto> expectedDtos = Arrays.asList(
+                new ItemDto("Test 1", BigDecimal.ZERO, new OrderDto()),
+                new ItemDto("Test 2", BigDecimal.ZERO, new OrderDto()),
+                new ItemDto("Test 3", BigDecimal.ZERO, new OrderDto()));
 
-        assertEquals(items, actualItems);
-        assertTrue(items.size() == actualItems.size());
+        when(mockRepository.findAll()).thenReturn(entities);
+        when(mockMapper.mapToDto(anyList())).thenReturn(expectedDtos);
+
+        final List<ItemDto> actualItems = itemService.getAll();
+
+        assertEquals(expectedDtos, actualItems);
         verify(mockRepository, times(1)).findAll();
+        verify(mockMapper, times(1)).mapToDto(anyList());
         verifyNoMoreInteractions(mockRepository);
+        verifyNoMoreInteractions(mockMapper);
     }
 
     @Test
     public void testFindAllEmptyList() {
-        final List<Item> emptyList = new ArrayList<>();
-        when(mockRepository.findAll()).thenReturn(new ArrayList<>());
+        final List<Item> entities = Collections.emptyList();
+        final List<ItemDto> expectedDtos = Collections.emptyList();
 
-        final List<Item> items = itemService.getAll();
+        when(mockRepository.findAll()).thenReturn(entities);
+        when(mockMapper.mapToDto(anyList())).thenReturn(expectedDtos);
 
-        assertEquals(emptyList, items);
-        assertTrue(emptyList.size() == items.size());
+        final List<ItemDto> actualItems = itemService.getAll();
+
+        // TODO: 13/02/2018 Current implementation is redundantly hitting mapper even with empty list
+        assertEquals(expectedDtos, actualItems);
         verify(mockRepository, times(1)).findAll();
+        verify(mockMapper, times(1)).mapToDto(anyList());
         verifyNoMoreInteractions(mockRepository);
+        verifyNoMoreInteractions(mockMapper);
     }
 
     @Test
-    public void testSaveItem() {
-        final Item item = new Item("Item", BigDecimal.ONE, null);
+    public void testSave() {
+        final Item item = new Item("Test 1", BigDecimal.ONE, new Order());
+        final ItemDto expectedDto = new ItemDto("Test 1", BigDecimal.ONE, new OrderDto());
+
+        when(mockMapper.mapToEntity(any(ItemDto.class))).thenReturn(item);
         when(mockRepository.save(any(Item.class))).thenReturn(item);
+        when(mockMapper.mapToDto(any(Item.class))).thenReturn(expectedDto);
 
-        final Item actualItem = itemService.save(item);
+        final ItemDto actualItem = itemService.save(expectedDto);
 
-        assertEquals(item, actualItem);
+        assertEquals(expectedDto, actualItem);
+        verify(mockMapper, times(1)).mapToEntity(expectedDto);
         verify(mockRepository, times(1)).save(item);
+        verify(mockMapper, times(1)).mapToDto(item);
         verifyNoMoreInteractions(mockRepository);
+        verifyNoMoreInteractions(mockMapper);
+    }
+
+    @Test
+    public void testGet() {
+        final Item item = new Item("Test 1", BigDecimal.ZERO, new Order());
+        final ItemDto expecteDto = new ItemDto("Test 1", BigDecimal.ZERO, new OrderDto());
+
+        when(mockRepository.findOne(anyLong())).thenReturn(item);
+        when(mockMapper.mapToDto(any(Item.class))).thenReturn(expecteDto);
+
+        final ItemDto actualItem = itemService.get(0L);
+
+        assertEquals(expecteDto, actualItem);
+        verify(mockRepository, times(1)).findOne(0L);
+        verify(mockMapper, times(1)).mapToDto(any(Item.class));
+        verifyNoMoreInteractions(mockRepository);
+        verifyNoMoreInteractions(mockMapper);
     }
 
     @After
