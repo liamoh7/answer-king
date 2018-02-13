@@ -60,6 +60,9 @@ public class OrderService {
             return null;
         }
 
+        // pay for order, build receipt
+        order.setPaid(true);
+
         final Receipt receipt = new Receipt();
         receipt.setPayment(payment);
         receipt.setOrder(order);

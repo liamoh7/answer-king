@@ -92,8 +92,6 @@ public class OrderServiceTest {
 
         final Order actualOrder = orderService.addItem(0L, 0L);
 
-        System.out.println(actualOrder);
-
         assertTrue(actualOrder.getItems().size() == 1);
         assertEquals(item, actualOrder.getItems().get(0));
         assertEquals(order, item.getOrder());
@@ -143,6 +141,7 @@ public class OrderServiceTest {
         final Receipt actualReceipt = orderService.pay(0L, paymentAmount);
 
         assertEquals(expectedReceipt, actualReceipt);
+        assertTrue(order.getPaid());
         verify(mockOrderRepository, times(1)).findOne(anyLong());
         verifyNoMoreInteractions(mockOrderRepository);
         verifyZeroInteractions(mockItemRepository);
