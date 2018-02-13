@@ -1,6 +1,6 @@
 package answer.king.controller;
 
-import answer.king.entity.Order;
+import answer.king.dto.OrderDto;
 import answer.king.entity.Receipt;
 import answer.king.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +23,8 @@ public class OrderController {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<Order>> getAll() {
-        final List<Order> orders = orderService.getAll();
+    public ResponseEntity<List<OrderDto>> getAll() {
+        final List<OrderDto> orders = orderService.getAll();
         if (orders == null) {
             return ResponseEntity.notFound().build();
         }
@@ -33,18 +33,23 @@ public class OrderController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<Order> create() {
-        return ResponseEntity.ok(orderService.save(new Order()));
+    public ResponseEntity<OrderDto> create() {
+        return ResponseEntity.ok(orderService.save(new OrderDto()));
+    }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    public ResponseEntity<OrderDto> get(@PathVariable(value = "id") int id) {
+        return null;
     }
 
     @RequestMapping(value = "/{id}/addItem/{itemId}", method = RequestMethod.PUT)
-    public ResponseEntity<Order> addItem(@PathVariable("id") long id, @PathVariable("itemId") long itemId) {
-        final Order order = orderService.addItem(id, itemId);
+    public ResponseEntity<OrderDto> addItem(@PathVariable("id") long id, @PathVariable("itemId") long itemId) {
+        final OrderDto order = orderService.addItem(id, itemId);
         if (order == null) {
             return ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity.created(URI.create("/id/response")).build();
+        return ResponseEntity.created(URI.create("/item/" + itemId)).build();
     }
 
     @RequestMapping(value = "/{id}/pay", method = RequestMethod.PUT)

@@ -1,10 +1,13 @@
 package answer.king.service;
 
-import answer.king.entity.Item;
+import answer.king.dto.ItemDto;
+import answer.king.dto.OrderDto;
 import answer.king.entity.Order;
 import answer.king.entity.Receipt;
 import answer.king.repo.ItemRepository;
 import answer.king.repo.OrderRepository;
+import answer.king.service.mapper.ItemMapper;
+import answer.king.service.mapper.OrderMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,24 +21,30 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ItemRepository itemRepository;
+    private final OrderMapper orderMapper;
+    private final ItemMapper itemMapper;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, ItemRepository itemRepository) {
+    public OrderService(OrderRepository orderRepository, ItemRepository itemRepository,
+                        OrderMapper orderMapper, ItemMapper itemMapper) {
         this.orderRepository = orderRepository;
         this.itemRepository = itemRepository;
+        this.orderMapper = orderMapper;
+        this.itemMapper = itemMapper;
     }
 
-    public List<Order> getAll() {
-        return orderRepository.findAll();
+    public List<OrderDto> getAll() {
+        return orderMapper.mapToDto(orderRepository.findAll());
     }
 
-    public Order save(Order order) {
-        return orderRepository.save(order);
+    public OrderDto save(OrderDto order) {
+        final Order entity = orderRepository.save(orderMapper.mapToEntity(order));
+        return orderMapper.mapToDto(entity);
     }
 
-    public Order addItem(long id, long itemId) {
-        final Item item = itemRepository.findOne(itemId);
-        Order order = orderRepository.findOne(id);
+    public OrderDto addItem(long id, long itemId) {
+        final ItemDto item = itemMapper.mapToDto(itemRepository.findOne(itemId));
+        OrderDto order = orderMapper.mapToDto(orderRepository.findOne(id));
 
         if (order == null || item == null) {
             return null;
@@ -49,8 +58,9 @@ public class OrderService {
         // item price shouldn't need to be validated as it has already been persisted, thus validated.
         order = addToRunningTotal(order, item.getPrice());
 
-        // items are persisted through cascading on mapping
-        return orderRepository.save(order);
+        // Issue with where dto's boundary should end & entity's begins.
+        final Order entity = orderMapper.mapToEntity(order);
+        return orderMapper.mapToDto(orderRepository.save(entity));
     }
 
     public Receipt pay(long id, BigDecimal payment) {
@@ -58,7 +68,7 @@ public class OrderService {
             return null;
         }
 
-        final Order order = orderRepository.findOne(id);
+        final OrderDto order = orderMapper.mapToDto(orderRepository.findOne(id));
 
         // TODO: 13/02/2018 Look into handling better
         if (order == null || !order.getTotal().equals(payment)) return null;
@@ -70,7 +80,7 @@ public class OrderService {
         return receipt;
     }
 
-    private Order addToRunningTotal(Order order, BigDecimal amount) {
+    private OrderDto addToRunningTotal(OrderDto order, BigDecimal amount) {
         if (order == null || amount == null) {
             // TODO: 13/02/2018 Handle
             return null;

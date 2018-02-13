@@ -1,6 +1,5 @@
 package answer.king.dto;
 
-import answer.king.entity.Order;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.Length;
@@ -24,18 +23,18 @@ public class ItemDto {
     private BigDecimal price;
 
     @JsonIgnore
-    private Order order;
+    private OrderDto order;
 
     public ItemDto() {
     }
 
-    public ItemDto(String name, BigDecimal price, Order order) {
+    public ItemDto(String name, BigDecimal price, OrderDto order) {
         this.name = name;
         this.price = price;
         this.order = order;
     }
 
-    public ItemDto(long id, String name, BigDecimal price, Order order) {
+    public ItemDto(long id, String name, BigDecimal price, OrderDto order) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -66,11 +65,11 @@ public class ItemDto {
         this.price = price;
     }
 
-    public Order getOrder() {
+    public OrderDto getOrder() {
         return order;
     }
 
-    public void setOrder(Order order) {
+    public void setOrder(OrderDto order) {
         this.order = order;
     }
 
