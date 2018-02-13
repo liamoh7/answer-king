@@ -34,8 +34,8 @@ public class OrderService {
     }
 
     public Order addItem(long id, long itemId) {
-        final Order order = orderRepository.findOne(id);
         final Item item = itemRepository.findOne(itemId);
+        Order order = orderRepository.findOne(id);
 
         if (order == null || item == null) {
             return null;
@@ -44,6 +44,10 @@ public class OrderService {
         // map the relationship between item & order
         item.setOrder(order);
         order.getItems().add(item);
+
+        // update the running total
+        // item price shouldn't need to be validated as it has already been persisted, thus validated.
+        order = addToRunningTotal(order, item.getPrice());
 
         // items are persisted through cascading on mapping
         return orderRepository.save(order);
@@ -56,16 +60,24 @@ public class OrderService {
 
         final Order order = orderRepository.findOne(id);
 
-        if (order == null) {
-            return null;
-        }
+        // TODO: 13/02/2018 Look into handling better
+        if (order == null || !order.getTotal().equals(payment)) return null;
 
-        // pay for order, build receipt
         order.setPaid(true);
-
         final Receipt receipt = new Receipt();
         receipt.setPayment(payment);
         receipt.setOrder(order);
         return receipt;
+    }
+
+    private Order addToRunningTotal(Order order, BigDecimal amount) {
+        if (order == null || amount == null) {
+            // TODO: 13/02/2018 Handle
+            return null;
+        }
+
+        final BigDecimal total = order.getTotal().add(amount);
+        order.setTotal(total);
+        return order;
     }
 }

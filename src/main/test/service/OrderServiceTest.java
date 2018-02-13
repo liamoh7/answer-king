@@ -82,7 +82,7 @@ public class OrderServiceTest {
     }
 
     @Test
-    public void testRelationshipsCorrectlySet() {
+    public void testAddItemRelationshipsCorrectlySet() {
         final Item item = new Item("Item 1", BigDecimal.ONE, null);
         final Order order = new Order();
 
@@ -102,6 +102,43 @@ public class OrderServiceTest {
     }
 
     @Test
+    public void testAddItemRunningTotalUpdated() {
+        final Item item = new Item("Item 1", BigDecimal.TEN, null);
+        final Order order = new Order();
+        final BigDecimal expectedTotal = BigDecimal.TEN;
+
+        when(mockItemRepository.findOne(0L)).thenReturn(item);
+        when(mockOrderRepository.findOne(0L)).thenReturn(order);
+        when(mockOrderRepository.save(any(Order.class))).thenReturn(order);
+
+        final Order actualOrder = orderService.addItem(0L, 0L);
+
+        assertEquals(expectedTotal, actualOrder.getTotal());
+    }
+
+    @Test
+    public void testAddItemWithInvalidOrder() {
+        final Item item = new Item("Item 1", BigDecimal.TEN, null);
+
+        when(mockItemRepository.findOne(0L)).thenReturn(item);
+        when(mockOrderRepository.findOne(0L)).thenReturn(null);
+
+        final Order actualOrder = orderService.addItem(0L, 0L);
+        assertNull(actualOrder);
+    }
+
+    @Test
+    public void testAddItemRunningTotalNullItemPrice() {
+        final Item item = new Item("Item 1", null, new Order());
+
+        when(mockItemRepository.findOne(0L)).thenReturn(item);
+        when(mockOrderRepository.findOne(0L)).thenReturn(new Order());
+
+        final Order actualOrder = orderService.addItem(0L, 0L);
+        assertNull(actualOrder);
+    }
+
+    @Test
     public void testSave() {
         when(mockOrderRepository.save(any(Order.class))).thenReturn(new Order());
 
@@ -114,12 +151,7 @@ public class OrderServiceTest {
     }
 
     @Test
-    public void testPayNullPayment() {
-        assertNull(orderService.pay(0L, null));
-    }
-
-    @Test
-    public void testInvalidOrderId() {
+    public void testPaymentInvalidOrderId() {
         when(mockOrderRepository.findOne(anyLong())).thenReturn(null);
         assertNull(orderService.pay(0L, BigDecimal.ONE));
         verify(mockOrderRepository, times(1)).findOne(anyLong());
@@ -130,6 +162,8 @@ public class OrderServiceTest {
     @Test
     public void testPaymentSuccess() {
         final Order order = new Order();
+        order.setTotal(BigDecimal.TEN);
+
         final BigDecimal paymentAmount = BigDecimal.TEN;
 
         final Receipt expectedReceipt = new Receipt();
@@ -145,6 +179,41 @@ public class OrderServiceTest {
         verify(mockOrderRepository, times(1)).findOne(anyLong());
         verifyNoMoreInteractions(mockOrderRepository);
         verifyZeroInteractions(mockItemRepository);
+    }
+
+    @Test
+    public void testPaymentInvalidAmount() {
+        final Order order = new Order();
+        final BigDecimal paymentAmount = BigDecimal.ONE;
+
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
+
+        final Receipt actualReceipt = orderService.pay(0L, paymentAmount);
+
+        assertNull(actualReceipt);
+        verify(mockOrderRepository, times(1)).findOne(anyLong());
+        verifyNoMoreInteractions(mockOrderRepository);
+        verifyZeroInteractions(mockItemRepository);
+    }
+
+    @Test
+    public void testPaymentNullAmount() {
+        final Order order = new Order();
+        final BigDecimal payment = null;
+
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
+
+        final Receipt actualReceipt = orderService.pay(0L, payment);
+        assertNull(actualReceipt);
+        verify(mockOrderRepository, times(1)).findOne(anyLong());
+        verifyNoMoreInteractions(mockOrderRepository);
+        verifyZeroInteractions(mockItemRepository);
+
+    }
+
+    @Test
+    public void testPayNullPayment() {
+        assertNull(orderService.pay(0L, null));
     }
 
     @After
