@@ -50,9 +50,17 @@ public class OrderService {
     }
 
     public Receipt pay(long id, BigDecimal payment) {
-        Order order = orderRepository.findOne(id);
+        if (payment == null || payment.signum() == -1) {
+            return null;
+        }
 
-        Receipt receipt = new Receipt();
+        final Order order = orderRepository.findOne(id);
+
+        if (order == null) {
+            return null;
+        }
+
+        final Receipt receipt = new Receipt();
         receipt.setPayment(payment);
         receipt.setOrder(order);
         return receipt;
