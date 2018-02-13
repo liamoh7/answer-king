@@ -1,6 +1,7 @@
 package answer.king;
 
 import com.google.common.base.Predicate;
+import org.dozer.DozerBeanMapper;
 import org.h2.server.web.WebServlet;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -20,21 +21,26 @@ import static springfox.documentation.builders.PathSelectors.regex;
 @EnableTransactionManagement
 public class Application extends SpringBootServletInitializer {
 
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
 
-	@Bean
-	public ServletRegistrationBean h2ServletRegistration() {
-		return new ServletRegistrationBean(new WebServlet(), "/h2/*");
-	}
+    @Bean
+    public ServletRegistrationBean h2ServletRegistration() {
+        return new ServletRegistrationBean(new WebServlet(), "/h2/*");
+    }
 
-	@Bean
-	public Docket swaggerSpringMvcPlugin() {
-		Predicate<String> apiPaths = or(regex("/order.*"), regex("/item.*"));
-		return new Docket(DocumentationType.SWAGGER_2)
-			.select()
-			.paths(apiPaths)
-			.build();
-	}
+    @Bean
+    public DozerBeanMapper modelMapper() {
+        return new DozerBeanMapper();
+    }
+
+    @Bean
+    public Docket swaggerSpringMvcPlugin() {
+        Predicate<String> apiPaths = or(regex("/order.*"), regex("/item.*"));
+        return new Docket(DocumentationType.SWAGGER_2)
+                .select()
+                .paths(apiPaths)
+                .build();
+    }
 }
