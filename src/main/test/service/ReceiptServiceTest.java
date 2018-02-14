@@ -50,23 +50,9 @@ public class ReceiptServiceTest {
 
     @Test
     public void testCreateInvalidPayment() {
-        final ReceiptDto actualReceipt = receiptService.create(new OrderDto(), null);
+        final ReceiptDto actualReceipt = receiptService.create(new Order(), null);
 
         assertNull(actualReceipt);
-    }
-
-    @Test
-    public void testCreateRepositorySaveFails() {
-        when(mockOrderMapper.mapToEntity(any(OrderDto.class))).thenReturn(new Order());
-        when(mockRepository.save(any(Receipt.class))).thenReturn(null);
-
-        final ReceiptDto actualReceipt = receiptService.create(new OrderDto(), BigDecimal.TEN);
-
-        assertNull(actualReceipt);
-        verify(mockOrderMapper, times(1)).mapToEntity(any(OrderDto.class));
-        verify(mockRepository, times(1)).save(any(Receipt.class));
-        verifyNoMoreInteractions(mockOrderMapper);
-        verifyNoMoreInteractions(mockRepository);
     }
 
     public void testCreateRepositorySuccess() {
@@ -76,7 +62,7 @@ public class ReceiptServiceTest {
         when(mockRepository.save(any(Receipt.class))).thenReturn(new Receipt());
         when(mockReceiptMapper.mapToDto(any(Receipt.class))).thenReturn(new ReceiptDto());
 
-        final ReceiptDto actualReceipt = receiptService.create(new OrderDto(), BigDecimal.TEN);
+        final ReceiptDto actualReceipt = receiptService.create(new Order(), BigDecimal.TEN);
 
         assertEquals(expectedReceipt, actualReceipt);
         verify(mockOrderMapper, times(1)).mapToEntity(any(OrderDto.class));

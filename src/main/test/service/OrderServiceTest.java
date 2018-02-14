@@ -5,11 +5,12 @@ import answer.king.dto.OrderDto;
 import answer.king.dto.ReceiptDto;
 import answer.king.entity.Item;
 import answer.king.entity.Order;
+import answer.king.error.InvalidPaymentException;
+import answer.king.error.NotFoundException;
 import answer.king.repo.ItemRepository;
 import answer.king.repo.OrderRepository;
 import answer.king.service.OrderService;
 import answer.king.service.ReceiptService;
-import answer.king.service.mapper.ItemMapper;
 import answer.king.service.mapper.OrderMapper;
 import org.junit.After;
 import org.junit.Before;
@@ -25,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -38,8 +38,6 @@ public class OrderServiceTest {
     @Mock
     private OrderMapper mockOrderMapper;
     @Mock
-    private ItemMapper mockItemMapper;
-    @Mock
     private ReceiptService mockReceiptService;
 
     private OrderService orderService;
@@ -47,7 +45,7 @@ public class OrderServiceTest {
     @Before
     public void setUp() {
         orderService = new OrderService(mockOrderRepository, mockItemRepository,
-                mockOrderMapper, mockItemMapper, mockReceiptService);
+                mockOrderMapper, mockReceiptService);
     }
 
     @Test
@@ -61,9 +59,6 @@ public class OrderServiceTest {
         verify(mockOrderMapper, times(1)).mapToDto(anyList());
         verifyNoMoreInteractions(mockOrderRepository);
         verifyNoMoreInteractions(mockOrderMapper);
-        verifyZeroInteractions(mockItemRepository);
-        verifyZeroInteractions(mockItemMapper);
-        verifyZeroInteractions(mockReceiptService);
     }
 
     @Test
@@ -79,31 +74,33 @@ public class OrderServiceTest {
         verify(mockOrderMapper, times(1)).mapToDto(anyList());
         verifyNoMoreInteractions(mockOrderRepository);
         verifyNoMoreInteractions(mockOrderMapper);
-        verifyZeroInteractions(mockItemRepository);
-        verifyZeroInteractions(mockItemMapper);
-        verifyZeroInteractions(mockReceiptService);
     }
 
-    @Test
-    public void testAddItemNullItemRetrievedFails() {
+    @Test(expected = NotFoundException.class)
+    public void testAddItemNullItemRetrievedFails() throws NotFoundException {
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order());
         when(mockItemRepository.findOne(anyLong())).thenReturn(null);
 
-        assertNull(orderService.addItem(1L, 1L));
+        orderService.addItem(1L, 1L);
+
+        verify(mockOrderRepository, times(1)).findOne(anyLong());
         verify(mockItemRepository, times(1)).findOne(anyLong());
+        verifyNoMoreInteractions(mockOrderRepository);
         verifyNoMoreInteractions(mockItemRepository);
     }
 
-    @Test
-    public void testAddItemNullOrderRetrievedFails() {
+    @Test(expected = NotFoundException.class)
+    public void testAddItemNullOrderRetrievedFails() throws NotFoundException {
         when(mockOrderRepository.findOne(anyLong())).thenReturn(null);
 
-        assertNull(orderService.addItem(1L, 1L));
+        orderService.addItem(1L, 1L);
+
         verify(mockOrderRepository, times(1)).findOne(anyLong());
         verifyNoMoreInteractions(mockOrderRepository);
     }
 
     @Test
-    public void testAddItem() {
+    public void testAddItem() throws NotFoundException {
         final OrderDto expectedOrder = new OrderDto(false, BigDecimal.ONE, null);
         final ItemDto expectedItemDto = new ItemDto("Item 1", BigDecimal.ONE, expectedOrder);
         expectedOrder.getItems().add(expectedItemDto);
@@ -130,15 +127,17 @@ public class OrderServiceTest {
         verifyNoMoreInteractions(mockOrderMapper);
     }
 
-    @Test
-    public void testAddItemWithInvalidOrder() {
+    @Test(expected = NotFoundException.class)
+    public void testAddItemWithInvalidOrder() throws NotFoundException {
         final Item item = new Item("Item 1", BigDecimal.TEN, null);
 
-        when(mockItemRepository.findOne(0L)).thenReturn(item);
         when(mockOrderRepository.findOne(0L)).thenReturn(null);
 
-        final OrderDto actualOrder = orderService.addItem(0L, 0L);
-        assertNull(actualOrder);
+        orderService.addItem(0L, 0L);
+
+        verify(mockOrderRepository, times(1)).findOne(anyLong());
+        verifyNoMoreInteractions(mockOrderRepository);
+        verifyZeroInteractions(mockItemRepository);
     }
 
     @Test
@@ -159,62 +158,96 @@ public class OrderServiceTest {
         verifyNoMoreInteractions(mockOrderRepository);
     }
 
-    @Test
-    public void testPaymentInvalidOrderId() {
+    @Test(expected = NotFoundException.class)
+    public void testGetMappedThrowsExceptionInvalid() throws NotFoundException {
         when(mockOrderRepository.findOne(anyLong())).thenReturn(null);
 
-        assertNull(orderService.pay(0L, BigDecimal.ONE));
-        verify(mockOrderRepository, times(1)).findOne(anyLong());
-        verifyNoMoreInteractions(mockOrderRepository);
-        verifyZeroInteractions(mockItemRepository);
+        orderService.getMapped(0L);
     }
 
     @Test
-    public void testPaymentSuccess() {
-        final ReceiptDto expectedReceipt = new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, Collections.singletonList(
-                new ItemDto("Item 1", BigDecimal.TEN))));
+    public void testGetMappedMapsCorrectly() throws NotFoundException {
+        final OrderDto expectedOrder = new OrderDto(false, BigDecimal.TEN, null);
 
-        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.TEN,
-                Collections.singletonList(new Item("Item 1", BigDecimal.TEN))));
-        when(mockOrderMapper.mapToDto(any(Order.class))).thenReturn(
-                new OrderDto(false, BigDecimal.TEN, Collections.singletonList(
-                        new ItemDto("Item 1", BigDecimal.TEN))));
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.TEN, null));
+        when(mockOrderMapper.mapToDto(any(Order.class))).thenReturn(new OrderDto(false, BigDecimal.TEN, null));
 
-        when(mockReceiptService.create(any(OrderDto.class), any(BigDecimal.class))).thenReturn(new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, Collections.singletonList(
-                new ItemDto("Item 1", BigDecimal.TEN)))));
+        final OrderDto actualOrder = orderService.getMapped(0L);
 
-        final ReceiptDto actualReceipt = orderService.pay(0L, BigDecimal.TEN);
-
-        assertEquals(expectedReceipt, actualReceipt);
+        assertEquals(expectedOrder, actualOrder);
         verify(mockOrderRepository, times(1)).findOne(anyLong());
         verify(mockOrderMapper, times(1)).mapToDto(any(Order.class));
-        verify(mockReceiptService, times(1)).create(any(OrderDto.class), any(BigDecimal.class));
-
         verifyNoMoreInteractions(mockOrderRepository);
         verifyNoMoreInteractions(mockOrderMapper);
     }
 
+    @Test(expected = NotFoundException.class)
+    public void testPaymentInvalidOrderId() throws NotFoundException, InvalidPaymentException {
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(null);
+
+        orderService.pay(0, BigDecimal.TEN);
+
+        verify(mockOrderRepository, times(1)).findOne(anyLong());
+        verifyNoMoreInteractions(mockOrderRepository);
+        verifyZeroInteractions(mockReceiptService);
+    }
+
 //    @Test
-//    public void testPaymentInvalidAmount() {
-//        final Order order = new Order();
-//        final BigDecimal paymentAmount = BigDecimal.ONE;
+//    public void testPaymentSuccess() throws NotFoundException, OrderService.InvalidPaymentException {
+//        final ReceiptDto expectedReceipt = new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, Collections.singletonList(
+//                new ItemDto("Item 1", BigDecimal.TEN))));
 //
-//        when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
+//        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.TEN,
+//                Collections.singletonList(new Item("Item 1", BigDecimal.TEN))));
+//        when(mockOrderMapper.mapToDto(any(Order.class))).thenReturn(
+//                new OrderDto(false, BigDecimal.TEN, Collections.singletonList(
+//                        new ItemDto("Item 1", BigDecimal.TEN))));
 //
-//        final Receipt actualReceipt = orderService.pay(0L, paymentAmount);
+//        when(mockReceiptService.create(any(Order.class), any(BigDecimal.class))).thenReturn(new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, Collections.singletonList(
+//                new ItemDto("Item 1", BigDecimal.TEN)))));
 //
-//        assertNull(actualReceipt);
+//        final ReceiptDto actualReceipt = orderService.pay(0L, BigDecimal.TEN);
+//
+//        assertEquals(expectedReceipt, actualReceipt);
 //        verify(mockOrderRepository, times(1)).findOne(anyLong());
+//        verify(mockOrderMapper, times(1)).mapToDto(any(Order.class));
+//        verify(mockReceiptService, times(1)).create(any(Order.class), any(BigDecimal.class));
+//
 //        verifyNoMoreInteractions(mockOrderRepository);
-//        verifyZeroInteractions(mockItemRepository);
+//        verifyNoMoreInteractions(mockOrderMapper);
 //    }
 
-    @Test
-    public void testPaymentNullAmount() {
-        final ReceiptDto actualReceipt = orderService.pay(0L, null);
 
-        assertNull(actualReceipt);
+    @Test
+    public void testPaySuccess() throws NotFoundException, InvalidPaymentException {
+        final ReceiptDto expectedReceipt = new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, null));
+
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.TEN, null));
+        when(mockReceiptService.create(any(Order.class), any(BigDecimal.class))).thenReturn(new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, null)));
+
+        final ReceiptDto actualReceipt = orderService.pay(0, BigDecimal.TEN);
+
+        assertEquals(expectedReceipt, actualReceipt);
+        verify(mockOrderRepository, times(1)).findOne(anyLong());
+        verify(mockReceiptService, times(1)).create(any(Order.class), any(BigDecimal.class));
+        verifyNoMoreInteractions(mockOrderRepository);
+        verifyNoMoreInteractions(mockReceiptService);
+    }
+
+    @Test(expected = InvalidPaymentException.class)
+    public void testPaymentNullAmount() throws NotFoundException, InvalidPaymentException {
+        orderService.pay(0, null);
+
         verifyZeroInteractions(mockOrderRepository);
+        verifyZeroInteractions(mockReceiptService);
+    }
+
+    @Test(expected = InvalidPaymentException.class)
+    public void testPaymentNegativeAmount() throws NotFoundException, InvalidPaymentException {
+        orderService.pay(0, new BigDecimal("-1.00"));
+
+        verifyZeroInteractions(mockOrderRepository);
+        verifyZeroInteractions(mockReceiptService);
     }
 
     @After

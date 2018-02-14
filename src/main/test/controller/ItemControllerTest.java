@@ -3,6 +3,7 @@ package controller;
 import answer.king.controller.ItemController;
 import answer.king.dto.ItemDto;
 import answer.king.dto.OrderDto;
+import answer.king.error.NotFoundException;
 import answer.king.service.ItemService;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,29 +41,30 @@ public class ItemControllerTest {
     }
 
     @Test
-    public void testGet() {
+    public void testGet() throws NotFoundException {
         final ItemDto expectedItem = new ItemDto("Test 1", BigDecimal.ZERO, new OrderDto());
-        when(mockService.get(anyLong())).thenReturn(expectedItem);
+        when(mockService.getMapped(anyLong())).thenReturn(expectedItem);
 
         final ResponseEntity<ItemDto> response = itemController.get(0L);
 
         assertEquals(expectedItem, response.getBody());
         assertTrue(response.getStatusCode() == HttpStatus.OK);
-        verify(mockService, times(1)).get(anyLong());
+        verify(mockService, times(1)).getMapped(anyLong());
         verifyNoMoreInteractions(mockService);
     }
 
-    @Test
-    public void testGetInvalidId() {
-        when(mockService.get(anyLong())).thenReturn(null);
-
-        final ResponseEntity<ItemDto> response = itemController.get(-1L);
-
-        assertNull(response.getBody());
-        assertTrue(response.getStatusCode() == HttpStatus.NOT_FOUND);
-        verify(mockService, times(1)).get(anyLong());
-        verifyNoMoreInteractions(mockService);
-    }
+    // If exception thrown within service, null could never be an issue, so test shouldn't be required
+//    @Test(expected = NotFoundException.class)
+//    public void testGetInvalidId() throws NotFoundException {
+//        when(mockService.get(anyLong())).thenReturn(null);
+//
+//        final ResponseEntity<ItemDto> response = itemController.get(-1L);
+//
+//        assertNull(response.getBody());
+//        assertTrue(response.getStatusCode() == HttpStatus.NOT_FOUND);
+//        verify(mockService, times(1)).getMapped(anyLong());
+//        verifyNoMoreInteractions(mockService);
+//    }
 
     @Test
     public void testGetAllSuccess() {
@@ -73,18 +75,6 @@ public class ItemControllerTest {
 
         assertEquals(items, response.getBody());
         assertTrue(response.getStatusCode() == HttpStatus.OK);
-        verify(mockService, times(1)).getAll();
-        verifyNoMoreInteractions(mockService);
-    }
-
-    @Test
-    public void testGetAllNotFoundWhenNull() {
-        when(mockService.getAll()).thenReturn(null);
-
-        final ResponseEntity<List<ItemDto>> response = itemController.getAll();
-
-        assertNull(response.getBody());
-        assertTrue(response.getStatusCode() == HttpStatus.NOT_FOUND);
         verify(mockService, times(1)).getAll();
         verifyNoMoreInteractions(mockService);
     }

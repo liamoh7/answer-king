@@ -2,12 +2,14 @@ package answer.king.service;
 
 import answer.king.dto.ItemDto;
 import answer.king.entity.Item;
+import answer.king.error.NotFoundException;
 import answer.king.repo.ItemRepository;
 import answer.king.service.mapper.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,12 +25,20 @@ public class ItemService {
         this.itemMapper = itemMapper;
     }
 
-    public ItemDto get(long id) {
-        return itemMapper.mapToDto(itemRepository.findOne(id));
+    public Item get(long id) throws NotFoundException {
+        final Item item = itemRepository.findOne(id);
+        if (item == null) throw new NotFoundException();
+        return item;
+    }
+
+    public ItemDto getMapped(long id) throws NotFoundException {
+        return itemMapper.mapToDto(get(id));
     }
 
     public List<ItemDto> getAll() {
-        return itemMapper.mapToDto(itemRepository.findAll());
+        List<Item> items = itemRepository.findAll();
+        if (items == null) items = new ArrayList<>();
+        return itemMapper.mapToDto(items);
     }
 
     public ItemDto save(ItemDto item) {

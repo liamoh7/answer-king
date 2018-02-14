@@ -36,14 +36,14 @@ public class ReceiptService {
         return mapper.mapToDto(repository.findOne(id));
     }
 
-    public ReceiptDto create(OrderDto order, BigDecimal payment) {
+    public ReceiptDto create(Order order, BigDecimal payment) {
         if (order == null || payment == null) return null;
 
         final Receipt receipt = new Receipt();
-        receipt.setOrder(orderMapper.mapToEntity(order));
+        receipt.setOrder(order);
         receipt.setPayment(payment);
 
         final Receipt entity = repository.save(receipt);
-        return entity != null ? mapper.mapToDto(entity) : null;
+        return mapper.mapToDto(entity);
     }
 }

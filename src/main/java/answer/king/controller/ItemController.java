@@ -1,6 +1,7 @@
 package answer.king.controller;
 
 import answer.king.dto.ItemDto;
+import answer.king.error.NotFoundException;
 import answer.king.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +26,7 @@ public class ItemController {
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<ItemDto>> getAll() {
-        final List<ItemDto> items = itemService.getAll();
-        if (items == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(items);
+        return ResponseEntity.ok(itemService.getAll());
     }
 
     @RequestMapping(method = RequestMethod.POST)
@@ -36,14 +35,11 @@ public class ItemController {
         if (itemResponse == null) {
             return ResponseEntity.badRequest().build();
         }
-
         return ResponseEntity.created(URI.create("/item/" + itemResponse.getId())).build();
     }
 
     @RequestMapping(path = "/{id}", method = RequestMethod.GET)
-    public ResponseEntity<ItemDto> get(@PathVariable(value = "id") long id) {
-        final ItemDto item = itemService.get(id);
-        if (item == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(item);
+    public ResponseEntity<ItemDto> get(@PathVariable(value = "id") long id) throws NotFoundException {
+        return ResponseEntity.ok(itemService.getMapped(id));
     }
 }

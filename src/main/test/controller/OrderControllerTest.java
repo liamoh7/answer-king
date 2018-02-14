@@ -3,6 +3,8 @@ package controller;
 import answer.king.controller.OrderController;
 import answer.king.dto.OrderDto;
 import answer.king.dto.ReceiptDto;
+import answer.king.error.InvalidPaymentException;
+import answer.king.error.NotFoundException;
 import answer.king.service.OrderService;
 import org.junit.After;
 import org.junit.Before;
@@ -19,7 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -35,27 +38,15 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void testGetValidId() {
+    public void testGetValidId() throws NotFoundException {
         final OrderDto expectedDto = new OrderDto();
-        when(mockService.get(anyLong())).thenReturn(new OrderDto());
+        when(mockService.getMapped(anyLong())).thenReturn(new OrderDto());
 
         final ResponseEntity<OrderDto> response = orderController.get(0L);
 
         assertEquals(expectedDto, response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(mockService, times(1)).get(anyLong());
-        verifyNoMoreInteractions(mockService);
-    }
-
-    @Test
-    public void testGetInvalidId() {
-        when(mockService.get(anyLong())).thenReturn(null);
-
-        final ResponseEntity<OrderDto> response = orderController.get(-1L);
-
-        assertNull(response.getBody());
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        verify(mockService, times(1)).get(anyLong());
+        verify(mockService, times(1)).getMapped(anyLong());
         verifyNoMoreInteractions(mockService);
     }
 
@@ -68,18 +59,6 @@ public class OrderControllerTest {
 
         assertEquals(expectedOrders, response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(mockService, times(1)).getAll();
-        verifyNoMoreInteractions(mockService);
-    }
-
-    @Test
-    public void testGetAllNotFoundWhenNull() {
-        when(mockService.getAll()).thenReturn(null);
-
-        final ResponseEntity<List<OrderDto>> response = orderController.getAll();
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
         verify(mockService, times(1)).getAll();
         verifyNoMoreInteractions(mockService);
     }
@@ -99,24 +78,13 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void testAddItemSuccessfully() {
+    public void testAddItemSuccessfully() throws NotFoundException {
         when(mockService.addItem(0L, 0L)).thenReturn(new OrderDto());
 
         final ResponseEntity<OrderDto> response = orderController.addItem(0L, 0L);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(URI.create("/item/0"), response.getHeaders().getLocation());
-        verify(mockService, times(1)).addItem(anyLong(), anyLong());
-        verifyNoMoreInteractions(mockService);
-    }
-
-    @Test
-    public void testAddNullReturnsBadRequest() {
-        when(mockService.addItem(anyLong(), anyLong())).thenReturn(null);
-
-        final ResponseEntity<OrderDto> response = orderController.addItem(0L, 0L);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         verify(mockService, times(1)).addItem(anyLong(), anyLong());
         verifyNoMoreInteractions(mockService);
     }
@@ -135,28 +103,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void testPayNullPaymentFails() {
-        final ResponseEntity<ReceiptDto> response = orderController.pay(1L, null);
-
-        assertNull(response.getBody());
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        verifyZeroInteractions(mockService);
-    }
-
-    @Test
-    public void testPayNullReceiptFails() {
-        when(mockService.pay(anyLong(), any())).thenReturn(null);
-
-        final ResponseEntity<ReceiptDto> response = orderController.pay(1L, BigDecimal.ONE);
-
-        assertEquals(response.getBody(), null);
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        verify(mockService, times(1)).pay(1L, BigDecimal.ONE);
-        verifyNoMoreInteractions(mockService);
-    }
-
-    @Test
-    public void testPaySuccess() {
+    public void testPaySuccess() throws InvalidPaymentException, NotFoundException {
         when(mockService.pay(anyLong(), any())).thenReturn(new ReceiptDto());
 
         final ResponseEntity<ReceiptDto> response = orderController.pay(1L, BigDecimal.ONE);

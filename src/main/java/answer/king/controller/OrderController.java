@@ -2,6 +2,8 @@ package answer.king.controller;
 
 import answer.king.dto.OrderDto;
 import answer.king.dto.ReceiptDto;
+import answer.king.error.InvalidPaymentException;
+import answer.king.error.NotFoundException;
 import answer.king.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +26,7 @@ public class OrderController {
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<OrderDto>> getAll() {
-        final List<OrderDto> orders = orderService.getAll();
-        if (orders == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(orders);
+        return ResponseEntity.ok(orderService.getAll());
     }
 
     @RequestMapping(method = RequestMethod.POST)
@@ -38,25 +35,18 @@ public class OrderController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public ResponseEntity<OrderDto> get(@PathVariable(value = "id") long id) {
-        final OrderDto order = orderService.get(id);
-        return order == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(order);
+    public ResponseEntity<OrderDto> get(@PathVariable(value = "id") long id) throws NotFoundException {
+        return ResponseEntity.ok(orderService.getMapped(id));
     }
 
     @RequestMapping(value = "/{id}/addItem/{itemId}", method = RequestMethod.PUT)
-    public ResponseEntity<OrderDto> addItem(@PathVariable("id") long id, @PathVariable("itemId") long itemId) {
-        final OrderDto order = orderService.addItem(id, itemId);
-        if (order == null) return ResponseEntity.badRequest().build();
+    public ResponseEntity<OrderDto> addItem(@PathVariable("id") long id, @PathVariable("itemId") long itemId) throws NotFoundException {
+        orderService.addItem(id, itemId);
         return ResponseEntity.created(URI.create("/item/" + itemId)).build();
     }
 
     @RequestMapping(value = "/{id}/pay", method = RequestMethod.PUT)
-    public ResponseEntity<ReceiptDto> pay(@PathVariable("id") long id, @RequestBody BigDecimal payment) {
-        if (payment == null) return ResponseEntity.badRequest().build();
-
-        final ReceiptDto receipt = orderService.pay(id, payment);
-        if (receipt == null) return ResponseEntity.badRequest().build();
-
-        return ResponseEntity.ok(receipt);
+    public ResponseEntity<ReceiptDto> pay(@PathVariable("id") long id, @RequestBody BigDecimal payment) throws InvalidPaymentException, NotFoundException {
+        return ResponseEntity.ok(orderService.pay(id, payment));
     }
 }

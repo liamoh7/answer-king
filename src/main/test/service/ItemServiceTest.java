@@ -4,6 +4,7 @@ import answer.king.dto.ItemDto;
 import answer.king.dto.OrderDto;
 import answer.king.entity.Item;
 import answer.king.entity.Order;
+import answer.king.error.NotFoundException;
 import answer.king.repo.ItemRepository;
 import answer.king.service.ItemService;
 import answer.king.service.mapper.Mapper;
@@ -98,14 +99,14 @@ public class ItemServiceTest {
     }
 
     @Test
-    public void testGet() {
+    public void testGet() throws NotFoundException {
         final Item item = new Item("Test 1", BigDecimal.ZERO, new Order());
         final ItemDto expectedDto = new ItemDto("Test 1", BigDecimal.ZERO, new OrderDto());
 
         when(mockRepository.findOne(anyLong())).thenReturn(item);
         when(mockMapper.mapToDto(any(Item.class))).thenReturn(expectedDto);
 
-        final ItemDto actualItem = itemService.get(0L);
+        final ItemDto actualItem = itemService.getMapped(0L);
 
         assertEquals(expectedDto, actualItem);
         verify(mockRepository, times(1)).findOne(0L);
