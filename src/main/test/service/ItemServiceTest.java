@@ -100,14 +100,14 @@ public class ItemServiceTest {
     @Test
     public void testGet() {
         final Item item = new Item("Test 1", BigDecimal.ZERO, new Order());
-        final ItemDto expecteDto = new ItemDto("Test 1", BigDecimal.ZERO, new OrderDto());
+        final ItemDto expectedDto = new ItemDto("Test 1", BigDecimal.ZERO, new OrderDto());
 
         when(mockRepository.findOne(anyLong())).thenReturn(item);
-        when(mockMapper.mapToDto(any(Item.class))).thenReturn(expecteDto);
+        when(mockMapper.mapToDto(any(Item.class))).thenReturn(expectedDto);
 
         final ItemDto actualItem = itemService.get(0L);
 
-        assertEquals(expecteDto, actualItem);
+        assertEquals(expectedDto, actualItem);
         verify(mockRepository, times(1)).findOne(0L);
         verify(mockMapper, times(1)).mapToDto(any(Item.class));
         verifyNoMoreInteractions(mockRepository);
