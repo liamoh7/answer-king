@@ -211,8 +211,6 @@ public class OrderServiceTest {
 
     @Test
     public void testPaymentNullAmount() {
-        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order());
-
         final ReceiptDto actualReceipt = orderService.pay(0L, null);
 
         assertNull(actualReceipt);
