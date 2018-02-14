@@ -36,12 +36,12 @@ public class ReceiptService {
         return mapper.mapToDto(repository.findOne(id));
     }
 
-    public ReceiptDto create(Order order, BigDecimal payment) {
-        if (order == null || payment == null) return null;
+    public ReceiptDto create(Order order, BigDecimal paymentAmount) {
+        if (order == null || paymentAmount == null) return null;
 
         final Receipt receipt = new Receipt();
         receipt.setOrder(order);
-        receipt.setPayment(payment);
+        receipt.setPayment(paymentAmount);
 
         final Receipt entity = repository.save(receipt);
         return mapper.mapToDto(entity);
