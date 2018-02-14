@@ -28,6 +28,11 @@ public class ItemDto {
     public ItemDto() {
     }
 
+    public ItemDto(String name, BigDecimal price) {
+        this.name = name;
+        this.price = price;
+    }
+
     public ItemDto(String name, BigDecimal price, OrderDto order) {
         this.name = name;
         this.price = price;

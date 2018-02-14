@@ -24,6 +24,15 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = {CascadeType.ALL, CascadeType.PERSIST})
     private List<Item> items = new ArrayList<>();
 
+    public Order() {
+    }
+
+    public Order(Boolean paid, BigDecimal total, List<Item> items) {
+        this.paid = paid;
+        this.total = total;
+        this.items = items;
+    }
+
     public Long getId() {
         return id;
     }

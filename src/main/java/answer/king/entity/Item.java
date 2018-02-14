@@ -33,6 +33,11 @@ public class Item {
     public Item() {
     }
 
+    public Item(String name, BigDecimal price) {
+        this.name = name;
+        this.price = price;
+    }
+
     public Item(String name, BigDecimal price, Order order) {
         this.name = name;
         this.price = price;

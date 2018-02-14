@@ -1,11 +1,16 @@
 package service;
 
+import answer.king.dto.ItemDto;
+import answer.king.dto.OrderDto;
+import answer.king.dto.ReceiptDto;
 import answer.king.entity.Item;
 import answer.king.entity.Order;
-import answer.king.entity.Receipt;
 import answer.king.repo.ItemRepository;
 import answer.king.repo.OrderRepository;
 import answer.king.service.OrderService;
+import answer.king.service.ReceiptService;
+import answer.king.service.mapper.ItemMapper;
+import answer.king.service.mapper.OrderMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,10 +21,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -29,45 +35,59 @@ public class OrderServiceTest {
     private OrderRepository mockOrderRepository;
     @Mock
     private ItemRepository mockItemRepository;
+    @Mock
+    private OrderMapper mockOrderMapper;
+    @Mock
+    private ItemMapper mockItemMapper;
+    @Mock
+    private ReceiptService mockReceiptService;
+
     private OrderService orderService;
 
     @Before
     public void setUp() {
-        orderService = new OrderService(mockOrderRepository, mockItemRepository);
+        orderService = new OrderService(mockOrderRepository, mockItemRepository,
+                mockOrderMapper, mockItemMapper, mockReceiptService);
     }
 
     @Test
     public void testGetAllEmptyList() {
         when(mockOrderRepository.findAll()).thenReturn(new ArrayList<>());
 
-        final List<Order> actualOrders = orderService.getAll();
+        final List<OrderDto> actualOrders = orderService.getAll();
 
-        assertEquals(new ArrayList<Order>(), actualOrders);
-        assertTrue(actualOrders.size() == 0);
+        assertEquals(new ArrayList<OrderDto>(), actualOrders);
         verify(mockOrderRepository, times(1)).findAll();
+        verify(mockOrderMapper, times(1)).mapToDto(anyList());
         verifyNoMoreInteractions(mockOrderRepository);
-
+        verifyNoMoreInteractions(mockOrderMapper);
         verifyZeroInteractions(mockItemRepository);
+        verifyZeroInteractions(mockItemMapper);
+        verifyZeroInteractions(mockReceiptService);
     }
 
     @Test
     public void testGetAllWithItemsInList() {
-        final List<Order> orders = Arrays.asList(new Order(), new Order());
-        when(mockOrderRepository.findAll()).thenReturn(orders);
+        final List<OrderDto> expectedOrders = Arrays.asList(new OrderDto(), new OrderDto());
+        when(mockOrderRepository.findAll()).thenReturn(Arrays.asList(new Order(), new Order()));
+        when(mockOrderMapper.mapToDto(anyList())).thenReturn(Arrays.asList(new OrderDto(), new OrderDto()));
 
-        final List<Order> actualOrders = orderService.getAll();
+        final List<OrderDto> actualOrders = orderService.getAll();
 
-        assertEquals(orders, actualOrders);
-        assertTrue(actualOrders.size() == orders.size());
+        assertEquals(expectedOrders, actualOrders);
         verify(mockOrderRepository, times(1)).findAll();
+        verify(mockOrderMapper, times(1)).mapToDto(anyList());
         verifyNoMoreInteractions(mockOrderRepository);
-
+        verifyNoMoreInteractions(mockOrderMapper);
         verifyZeroInteractions(mockItemRepository);
+        verifyZeroInteractions(mockItemMapper);
+        verifyZeroInteractions(mockReceiptService);
     }
 
     @Test
     public void testAddItemNullItemRetrievedFails() {
         when(mockItemRepository.findOne(anyLong())).thenReturn(null);
+
         assertNull(orderService.addItem(1L, 1L));
         verify(mockItemRepository, times(1)).findOne(anyLong());
         verifyNoMoreInteractions(mockItemRepository);
@@ -76,44 +96,38 @@ public class OrderServiceTest {
     @Test
     public void testAddItemNullOrderRetrievedFails() {
         when(mockOrderRepository.findOne(anyLong())).thenReturn(null);
+
         assertNull(orderService.addItem(1L, 1L));
         verify(mockOrderRepository, times(1)).findOne(anyLong());
         verifyNoMoreInteractions(mockOrderRepository);
     }
 
     @Test
-    public void testAddItemRelationshipsCorrectlySet() {
-        final Item item = new Item("Item 1", BigDecimal.ONE, null);
-        final Order order = new Order();
+    public void testAddItem() {
+        final OrderDto expectedOrder = new OrderDto(false, BigDecimal.ONE, null);
+        final ItemDto expectedItemDto = new ItemDto("Item 1", BigDecimal.ONE, expectedOrder);
+        expectedOrder.getItems().add(expectedItemDto);
 
-        when(mockItemRepository.findOne(0L)).thenReturn(item);
-        when(mockOrderRepository.findOne(0L)).thenReturn(order);
-        when(mockOrderRepository.save(any(Order.class))).thenReturn(order);
+        when(mockItemRepository.findOne(anyLong())).thenReturn(new Item("Item 1", BigDecimal.ONE));
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.ZERO, null));
 
-        final Order actualOrder = orderService.addItem(0L, 0L);
+        when(mockOrderRepository.save(any(Order.class))).thenReturn(new Order(false, BigDecimal.ONE,
+                Collections.singletonList(new Item("Item 1", BigDecimal.ONE))));
 
-        assertTrue(actualOrder.getItems().size() == 1);
-        assertEquals(item, actualOrder.getItems().get(0));
-        assertEquals(order, item.getOrder());
+        when(mockOrderMapper.mapToDto(any(Order.class))).thenReturn(new OrderDto(false, BigDecimal.ONE,
+                Collections.singletonList(new ItemDto("Item 1", BigDecimal.ONE, null))));
+
+        final OrderDto actualOrder = orderService.addItem(0L, 0L);
+
+        assertEquals(expectedOrder, actualOrder);
         verify(mockItemRepository, times(1)).findOne(anyLong());
         verify(mockOrderRepository, times(1)).findOne(anyLong());
+        verify(mockOrderRepository, times(1)).save(any(Order.class));
+        verify(mockOrderMapper, times(1)).mapToDto(any(Order.class));
+
+        verifyNoMoreInteractions(mockOrderRepository);
         verifyNoMoreInteractions(mockItemRepository);
-        verifyNoMoreInteractions(mockItemRepository);
-    }
-
-    @Test
-    public void testAddItemRunningTotalUpdated() {
-        final Item item = new Item("Item 1", BigDecimal.TEN, null);
-        final Order order = new Order();
-        final BigDecimal expectedTotal = BigDecimal.TEN;
-
-        when(mockItemRepository.findOne(0L)).thenReturn(item);
-        when(mockOrderRepository.findOne(0L)).thenReturn(order);
-        when(mockOrderRepository.save(any(Order.class))).thenReturn(order);
-
-        final Order actualOrder = orderService.addItem(0L, 0L);
-
-        assertEquals(expectedTotal, actualOrder.getTotal());
+        verifyNoMoreInteractions(mockOrderMapper);
     }
 
     @Test
@@ -123,36 +137,32 @@ public class OrderServiceTest {
         when(mockItemRepository.findOne(0L)).thenReturn(item);
         when(mockOrderRepository.findOne(0L)).thenReturn(null);
 
-        final Order actualOrder = orderService.addItem(0L, 0L);
-        assertNull(actualOrder);
-    }
-
-    @Test
-    public void testAddItemRunningTotalNullItemPrice() {
-        final Item item = new Item("Item 1", null, new Order());
-
-        when(mockItemRepository.findOne(0L)).thenReturn(item);
-        when(mockOrderRepository.findOne(0L)).thenReturn(new Order());
-
-        final Order actualOrder = orderService.addItem(0L, 0L);
+        final OrderDto actualOrder = orderService.addItem(0L, 0L);
         assertNull(actualOrder);
     }
 
     @Test
     public void testSave() {
-        when(mockOrderRepository.save(any(Order.class))).thenReturn(new Order());
+        final OrderDto expectedOrder = new OrderDto(false, BigDecimal.ZERO, null);
 
-        final Order actualOrder = orderService.save(new Order());
+        when(mockOrderMapper.mapToEntity(any(OrderDto.class))).thenReturn(new Order(false, BigDecimal.ZERO, null));
+        when(mockOrderRepository.save(any(Order.class))).thenReturn(new Order(false, BigDecimal.ZERO, null));
+        when(mockOrderMapper.mapToDto(any(Order.class))).thenReturn(new OrderDto(false, BigDecimal.ZERO, null));
 
-        assertEquals(new Order(), actualOrder);
+        final OrderDto actualOrder = orderService.save(new OrderDto(false, BigDecimal.ZERO, null));
+
+        assertEquals(expectedOrder, actualOrder);
         verify(mockOrderRepository, times(1)).save(any(Order.class));
+        verify(mockOrderMapper, times(1)).mapToDto(any(Order.class));
+        verify(mockOrderMapper, times(1)).mapToEntity(any(OrderDto.class));
         verifyNoMoreInteractions(mockOrderRepository);
-        verifyZeroInteractions(mockItemRepository);
+        verifyNoMoreInteractions(mockOrderRepository);
     }
 
     @Test
     public void testPaymentInvalidOrderId() {
         when(mockOrderRepository.findOne(anyLong())).thenReturn(null);
+
         assertNull(orderService.pay(0L, BigDecimal.ONE));
         verify(mockOrderRepository, times(1)).findOne(anyLong());
         verifyNoMoreInteractions(mockOrderRepository);
@@ -161,59 +171,52 @@ public class OrderServiceTest {
 
     @Test
     public void testPaymentSuccess() {
-        final Order order = new Order();
-        order.setTotal(BigDecimal.TEN);
+        final ReceiptDto expectedReceipt = new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, Collections.singletonList(
+                new ItemDto("Item 1", BigDecimal.TEN))));
 
-        final BigDecimal paymentAmount = BigDecimal.TEN;
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.TEN,
+                Collections.singletonList(new Item("Item 1", BigDecimal.TEN))));
+        when(mockOrderMapper.mapToDto(any(Order.class))).thenReturn(
+                new OrderDto(false, BigDecimal.TEN, Collections.singletonList(
+                        new ItemDto("Item 1", BigDecimal.TEN))));
 
-        final Receipt expectedReceipt = new Receipt();
-        expectedReceipt.setOrder(order);
-        expectedReceipt.setPayment(paymentAmount);
+        when(mockReceiptService.create(any(OrderDto.class), any(BigDecimal.class))).thenReturn(new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, Collections.singletonList(
+                new ItemDto("Item 1", BigDecimal.TEN)))));
 
-        when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
-
-        final Receipt actualReceipt = orderService.pay(0L, paymentAmount);
+        final ReceiptDto actualReceipt = orderService.pay(0L, BigDecimal.TEN);
 
         assertEquals(expectedReceipt, actualReceipt);
-        assertTrue(order.getPaid());
         verify(mockOrderRepository, times(1)).findOne(anyLong());
+        verify(mockOrderMapper, times(1)).mapToDto(any(Order.class));
+        verify(mockReceiptService, times(1)).create(any(OrderDto.class), any(BigDecimal.class));
+
         verifyNoMoreInteractions(mockOrderRepository);
-        verifyZeroInteractions(mockItemRepository);
+        verifyNoMoreInteractions(mockOrderMapper);
     }
 
-    @Test
-    public void testPaymentInvalidAmount() {
-        final Order order = new Order();
-        final BigDecimal paymentAmount = BigDecimal.ONE;
-
-        when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
-
-        final Receipt actualReceipt = orderService.pay(0L, paymentAmount);
-
-        assertNull(actualReceipt);
-        verify(mockOrderRepository, times(1)).findOne(anyLong());
-        verifyNoMoreInteractions(mockOrderRepository);
-        verifyZeroInteractions(mockItemRepository);
-    }
+//    @Test
+//    public void testPaymentInvalidAmount() {
+//        final Order order = new Order();
+//        final BigDecimal paymentAmount = BigDecimal.ONE;
+//
+//        when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
+//
+//        final Receipt actualReceipt = orderService.pay(0L, paymentAmount);
+//
+//        assertNull(actualReceipt);
+//        verify(mockOrderRepository, times(1)).findOne(anyLong());
+//        verifyNoMoreInteractions(mockOrderRepository);
+//        verifyZeroInteractions(mockItemRepository);
+//    }
 
     @Test
     public void testPaymentNullAmount() {
-        final Order order = new Order();
-        final BigDecimal payment = null;
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order());
 
-        when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
+        final ReceiptDto actualReceipt = orderService.pay(0L, null);
 
-        final Receipt actualReceipt = orderService.pay(0L, payment);
         assertNull(actualReceipt);
-        verify(mockOrderRepository, times(1)).findOne(anyLong());
-        verifyNoMoreInteractions(mockOrderRepository);
-        verifyZeroInteractions(mockItemRepository);
-
-    }
-
-    @Test
-    public void testPayNullPayment() {
-        assertNull(orderService.pay(0L, null));
+        verifyZeroInteractions(mockOrderRepository);
     }
 
     @After

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,6 +21,12 @@ public class OrderDto {
     private BigDecimal total = BigDecimal.ZERO;
 
     private List<ItemDto> items;
+
+    public OrderDto(boolean paid, BigDecimal total, List<ItemDto> items) {
+        this.paid = paid;
+        this.total = total;
+        this.items = items;
+    }
 
     public OrderDto() {
     }
@@ -49,6 +56,7 @@ public class OrderDto {
     }
 
     public List<ItemDto> getItems() {
+        if (items == null) items = new ArrayList<>();
         return items;
     }
 
@@ -70,5 +78,15 @@ public class OrderDto {
     @Override
     public int hashCode() {
         return Objects.hash(id, paid, total, items);
+    }
+
+    @Override
+    public String toString() {
+        return "OrderDto{" +
+                "id=" + id +
+                ", paid=" + paid +
+                ", total=" + total +
+                ", items=" + items +
+                '}';
     }
 }

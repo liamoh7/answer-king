@@ -1,8 +1,8 @@
 package answer.king.service;
 
-import answer.king.dto.ItemDto;
 import answer.king.dto.OrderDto;
 import answer.king.dto.ReceiptDto;
+import answer.king.entity.Item;
 import answer.king.entity.Order;
 import answer.king.repo.ItemRepository;
 import answer.king.repo.OrderRepository;
@@ -48,25 +48,25 @@ public class OrderService {
         return orderMapper.mapToDto(entity);
     }
 
-    public OrderDto addItem(long id, long itemId) {
-        final ItemDto item = itemMapper.mapToDto(itemRepository.findOne(itemId));
-        OrderDto order = orderMapper.mapToDto(orderRepository.findOne(id));
+    public OrderDto addItem(long orderId, long itemId) {
+        final Order order = orderRepository.findOne(orderId);
+        final Item item = itemRepository.findOne(itemId);
 
         if (order == null || item == null) {
             return null;
         }
 
-        // map the relationship between item & order
-        item.setOrder(order);
+        return addItemToOrder(order, item);
+    }
+
+    private OrderDto addItemToOrder(Order order, Item item) {
         order.getItems().add(item);
+        order.setTotal(order.getTotal().add(item.getPrice()));
+        item.setOrder(order);
 
-        // update the running total
-        // item price shouldn't need to be validated as it has already been persisted, thus validated.
-        order = addToRunningTotal(order, item.getPrice());
-
-        // Issue with where dto's boundary should end & entity's begins.
-        final Order entity = orderMapper.mapToEntity(order);
-        return orderMapper.mapToDto(orderRepository.save(entity));
+        // persist and map to dto
+        order = orderRepository.save(order);
+        return orderMapper.mapToDto(order);
     }
 
     public ReceiptDto pay(long id, BigDecimal payment) {
@@ -76,21 +76,10 @@ public class OrderService {
 
         final OrderDto order = orderMapper.mapToDto(orderRepository.findOne(id));
 
-        // TODO: 13/02/2018 Look into handling better
+        // TODO: 13/02/2018 Look into handling better, give user change
         if (order == null || !order.getTotal().equals(payment)) return null;
 
         order.setPaid(true);
         return receiptService.create(order, payment);
-    }
-
-    private OrderDto addToRunningTotal(OrderDto order, BigDecimal amount) {
-        if (order == null || amount == null) {
-            // TODO: 13/02/2018 Handle
-            return null;
-        }
-
-        final BigDecimal total = order.getTotal().add(amount);
-        order.setTotal(total);
-        return order;
     }
 }
