@@ -16,6 +16,14 @@ public class Receipt {
     @OneToOne(fetch = FetchType.LAZY)
     private Order order;
 
+    public Receipt() {
+    }
+
+    public Receipt(BigDecimal payment, Order order) {
+        this.payment = payment;
+        this.order = order;
+    }
+
     public long getId() {
         return id;
     }

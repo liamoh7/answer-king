@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @Transactional
@@ -27,16 +28,12 @@ public class ReceiptService {
         this.orderMapper = orderMapper;
     }
 
-    public void getAll() {
-
+    public List<ReceiptDto> getAll() {
+        return mapper.mapToDto(repository.findAll());
     }
 
-    public void get(long id) {
-
-    }
-
-    public BigDecimal getChange(ReceiptDto receipt) {
-        return null;
+    public ReceiptDto get(long id) {
+        return mapper.mapToDto(repository.findOne(id));
     }
 
     public ReceiptDto create(OrderDto order, BigDecimal payment) {
