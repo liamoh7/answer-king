@@ -2,8 +2,8 @@ package answer.king.service;
 
 import answer.king.dto.ItemDto;
 import answer.king.dto.OrderDto;
+import answer.king.dto.ReceiptDto;
 import answer.king.entity.Order;
-import answer.king.entity.Receipt;
 import answer.king.repo.ItemRepository;
 import answer.king.repo.OrderRepository;
 import answer.king.service.mapper.ItemMapper;
@@ -23,14 +23,20 @@ public class OrderService {
     private final ItemRepository itemRepository;
     private final OrderMapper orderMapper;
     private final ItemMapper itemMapper;
+    private final ReceiptService receiptService;
 
     @Autowired
     public OrderService(OrderRepository orderRepository, ItemRepository itemRepository,
-                        OrderMapper orderMapper, ItemMapper itemMapper) {
+                        OrderMapper orderMapper, ItemMapper itemMapper, ReceiptService receiptService) {
         this.orderRepository = orderRepository;
         this.itemRepository = itemRepository;
         this.orderMapper = orderMapper;
         this.itemMapper = itemMapper;
+        this.receiptService = receiptService;
+    }
+
+    public OrderDto get(long id) {
+        return orderMapper.mapToDto(orderRepository.getOne(id));
     }
 
     public List<OrderDto> getAll() {
@@ -63,7 +69,7 @@ public class OrderService {
         return orderMapper.mapToDto(orderRepository.save(entity));
     }
 
-    public Receipt pay(long id, BigDecimal payment) {
+    public ReceiptDto pay(long id, BigDecimal payment) {
         if (payment == null || payment.signum() == -1) {
             return null;
         }
@@ -74,10 +80,7 @@ public class OrderService {
         if (order == null || !order.getTotal().equals(payment)) return null;
 
         order.setPaid(true);
-        final Receipt receipt = new Receipt();
-        receipt.setPayment(payment);
-        receipt.setOrder(order);
-        return receipt;
+        return receiptService.create(order, payment);
     }
 
     private OrderDto addToRunningTotal(OrderDto order, BigDecimal amount) {

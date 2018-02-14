@@ -1,50 +1,57 @@
 package answer.king.entity;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+@Entity
+@Table(name = "T_RECEIPT")
 public class Receipt {
 
-	private BigDecimal payment;
+    @Id
+    @GeneratedValue
+    private long id;
+    private BigDecimal payment;
 
-	private Order order;
+    @OneToOne(fetch = FetchType.LAZY)
+    private Order order;
 
-	public Order getOrder() {
-		return order;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public void setOrder(Order order) {
-		this.order = order;
-	}
+    public void setId(long id) {
+        this.id = id;
+    }
 
-	public BigDecimal getPayment() {
-		return payment;
-	}
+    public BigDecimal getPayment() {
+        return payment;
+    }
 
-	public void setPayment(BigDecimal payment) {
-		this.payment = payment;
-	}
+    public void setPayment(BigDecimal payment) {
+        this.payment = payment;
+    }
 
-	public BigDecimal getChange() {
-		BigDecimal totalOrderPrice = order.getItems()
-			.stream()
-			.map(Item::getPrice)
-			.reduce(BigDecimal.ZERO, BigDecimal::add);
+    public Order getOrder() {
+        return order;
+    }
 
-		return payment.subtract(totalOrderPrice);
-	}
+    public void setOrder(Order order) {
+        this.order = order;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Receipt)) return false;
         Receipt receipt = (Receipt) o;
-        return Objects.equals(payment, receipt.payment) &&
+        return id == receipt.id &&
+                Objects.equals(payment, receipt.payment) &&
                 Objects.equals(order, receipt.order);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(payment, order);
+        return Objects.hash(id, payment, order);
     }
 }
