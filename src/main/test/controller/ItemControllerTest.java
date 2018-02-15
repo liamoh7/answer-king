@@ -2,7 +2,6 @@ package controller;
 
 import answer.king.controller.ItemController;
 import answer.king.dto.ItemDto;
-import answer.king.dto.OrderDto;
 import answer.king.error.InvalidPriceException;
 import answer.king.error.NotFoundException;
 import answer.king.service.ItemService;
@@ -43,7 +42,7 @@ public class ItemControllerTest {
 
     @Test
     public void testGet() throws NotFoundException {
-        final ItemDto expectedItem = new ItemDto("Test 1", BigDecimal.ZERO, new OrderDto());
+        final ItemDto expectedItem = new ItemDto("Test 1", BigDecimal.ZERO);
         when(mockService.getMapped(anyLong())).thenReturn(expectedItem);
 
         final ResponseEntity<ItemDto> response = itemController.get(0L);
@@ -84,7 +83,7 @@ public class ItemControllerTest {
     @Test
     public void testCreateValidData() {
         // TODO: 13/02/2018 Test for URI
-        final ItemDto item = new ItemDto(0, "Test Item", BigDecimal.ONE, null);
+        final ItemDto item = new ItemDto("Test Item", BigDecimal.ONE);
         when(mockService.save(any(ItemDto.class))).thenReturn(item);
 
         final ResponseEntity<ItemDto> response = itemController.create(new ItemDto());
@@ -109,64 +108,50 @@ public class ItemControllerTest {
 
     @Test
     public void testInvalidNameWithNull() {
-        final ItemDto item = new ItemDto(null, BigDecimal.ONE, null);
+        final ItemDto item = new ItemDto(null, BigDecimal.ONE);
         validateWithViolation(item);
     }
 
     @Test
     public void testInvalidNameWithInvalidLength() {
         // TODO: 13/02/2018 Fix null order
-        final ItemDto item = new ItemDto("", BigDecimal.ONE, null);
+        final ItemDto item = new ItemDto("", BigDecimal.ONE);
         validateWithViolation(item);
     }
 
     @Test
     public void testInvalidPriceWithNull() {
-        final ItemDto item = new ItemDto("Item 1", null, null);
+        final ItemDto item = new ItemDto("Item 1", null);
         validateWithViolation(item);
     }
 
     @Test
     public void testInvalidPriceTooManyDigits() {
-        final ItemDto item = new ItemDto("Item 1", new BigDecimal("9999999999999999"), null);
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("9999999999999999"));
         validateWithViolation(item);
     }
 
     @Test
     public void testInvalidPriceTooManyDecimals() {
-        final ItemDto item = new ItemDto("Item 1", new BigDecimal("10.000"), null);
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("10.000"));
         validateWithViolation(item);
     }
 
     @Test
     public void testPriceWithNoDecimals() {
-        final ItemDto item = new ItemDto("Item 1", new BigDecimal("10"), null);
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("10"));
         validateWithNoViolations(item);
     }
 
     @Test
     public void testPriceWithDecimals() {
-        final ItemDto item = new ItemDto("Item 1", new BigDecimal("10.00"), null);
-        validateWithNoViolations(item);
-    }
-
-    @Test
-    public void testNullOrder() {
-        // TODO: 13/02/2018 Eventually when orders are fixed this will not duplicate
-        final ItemDto item = new ItemDto("Item 1", new BigDecimal("10.00"), null);
-        when(mockService.save(item)).thenReturn(item);
-
-        final ResponseEntity<ItemDto> response = itemController.create(item);
-
-        assertTrue(response.getStatusCode() == HttpStatus.CREATED);
-        verify(mockService, times(1)).save(any(ItemDto.class));
-        verifyNoMoreInteractions(mockService);
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("10.00"));
         validateWithNoViolations(item);
     }
 
     @Test
     public void testUpdatePrice() throws NotFoundException, InvalidPriceException {
-        final ItemDto item = new ItemDto("Item 1", new BigDecimal("32.85"), null);
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("32.85"));
 
         when(mockService.updatePrice(anyLong(), any())).thenReturn(item);
 

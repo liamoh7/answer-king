@@ -3,6 +3,7 @@ package answer.king.service;
 import answer.king.dto.OrderDto;
 import answer.king.dto.ReceiptDto;
 import answer.king.entity.Item;
+import answer.king.entity.LineItem;
 import answer.king.entity.Order;
 import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
@@ -62,9 +63,14 @@ public class OrderService {
     }
 
     private OrderDto addItemToOrder(Order order, Item item) {
-        order.getItems().add(item);
+        final LineItem lineItem = new LineItem();
+        lineItem.setItem(item);
+        lineItem.setPrice(item.getPrice());
+        lineItem.setQuantity(1);
+        lineItem.setOrder(order);
+
+        order.getItems().add(lineItem);
         order.setTotal(order.getTotal().add(item.getPrice()));
-        item.setOrder(order);
 
         // persist and map to dto
         order = orderRepository.save(order);

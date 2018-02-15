@@ -1,9 +1,7 @@
 package service;
 
 import answer.king.dto.ItemDto;
-import answer.king.dto.OrderDto;
 import answer.king.entity.Item;
-import answer.king.entity.Order;
 import answer.king.error.InvalidPriceException;
 import answer.king.error.NotFoundException;
 import answer.king.repo.ItemRepository;
@@ -41,14 +39,14 @@ public class ItemServiceTest {
     @Test
     public void testFindAllWithItems() {
         final List<Item> entities = Arrays.asList(
-                new Item("Test 1", BigDecimal.ZERO, new Order()),
-                new Item("Test 3", BigDecimal.ONE, new Order()),
-                new Item("Test 2", new BigDecimal("210.00"), new Order()));
+                new Item("Test 1", BigDecimal.ZERO),
+                new Item("Test 3", BigDecimal.ONE),
+                new Item("Test 2", new BigDecimal("210.00")));
 
         final List<ItemDto> expectedDtos = Arrays.asList(
-                new ItemDto("Test 1", BigDecimal.ZERO, new OrderDto()),
-                new ItemDto("Test 2", BigDecimal.ZERO, new OrderDto()),
-                new ItemDto("Test 3", BigDecimal.ZERO, new OrderDto()));
+                new ItemDto("Test 1", BigDecimal.ZERO),
+                new ItemDto("Test 2", BigDecimal.ZERO),
+                new ItemDto("Test 3", BigDecimal.ZERO));
 
         when(mockRepository.findAll()).thenReturn(entities);
         when(mockMapper.mapToDto(anyList())).thenReturn(expectedDtos);
@@ -82,8 +80,8 @@ public class ItemServiceTest {
 
     @Test
     public void testSave() {
-        final Item item = new Item("Test 1", BigDecimal.ONE, new Order());
-        final ItemDto expectedDto = new ItemDto("Test 1", BigDecimal.ONE, new OrderDto());
+        final Item item = new Item("Test 1", BigDecimal.ONE);
+        final ItemDto expectedDto = new ItemDto("Test 1", BigDecimal.ONE);
 
         when(mockMapper.mapToEntity(any(ItemDto.class))).thenReturn(item);
         when(mockRepository.save(any(Item.class))).thenReturn(item);
@@ -101,8 +99,8 @@ public class ItemServiceTest {
 
     @Test
     public void testGet() throws NotFoundException {
-        final Item item = new Item("Test 1", BigDecimal.ZERO, new Order());
-        final ItemDto expectedDto = new ItemDto("Test 1", BigDecimal.ZERO, new OrderDto());
+        final Item item = new Item("Test 1", BigDecimal.ZERO);
+        final ItemDto expectedDto = new ItemDto("Test 1", BigDecimal.ZERO);
 
         when(mockRepository.findOne(anyLong())).thenReturn(item);
         when(mockMapper.mapToDto(any(Item.class))).thenReturn(expectedDto);

@@ -20,9 +20,9 @@ public class OrderDto {
     @Digits(integer = 10, fraction = 2)
     private BigDecimal total = BigDecimal.ZERO;
 
-    private List<ItemDto> items;
+    private List<LineItemDto> items;
 
-    public OrderDto(boolean paid, BigDecimal total, List<ItemDto> items) {
+    public OrderDto(boolean paid, BigDecimal total, List<LineItemDto> items) {
         this.paid = paid;
         this.total = total;
         this.items = items;
@@ -55,12 +55,12 @@ public class OrderDto {
         this.total = total;
     }
 
-    public List<ItemDto> getItems() {
+    public List<LineItemDto> getItems() {
         if (items == null) items = new ArrayList<>();
         return items;
     }
 
-    public void setItems(List<ItemDto> items) {
+    public void setItems(List<LineItemDto> items) {
         this.items = items;
     }
 

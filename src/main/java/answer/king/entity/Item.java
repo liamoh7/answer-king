@@ -1,6 +1,5 @@
 package answer.king.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
@@ -25,23 +24,12 @@ public class Item {
     @Digits(integer = 15, fraction = 2)
     private BigDecimal price;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ORDER_ID")
-    private Order order;
-
     public Item() {
     }
 
     public Item(String name, BigDecimal price) {
         this.name = name;
         this.price = price;
-    }
-
-    public Item(String name, BigDecimal price, Order order) {
-        this.name = name;
-        this.price = price;
-        this.order = order;
     }
 
     public Long getId() {
@@ -68,14 +56,6 @@ public class Item {
         this.price = price;
     }
 
-    public Order getOrder() {
-        return order;
-    }
-
-    public void setOrder(Order order) {
-        this.order = order;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -83,12 +63,11 @@ public class Item {
         Item item = (Item) o;
         return Objects.equals(id, item.id) &&
                 Objects.equals(name, item.name) &&
-                Objects.equals(price, item.price) &&
-                Objects.equals(order, item.order);
+                Objects.equals(price, item.price);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, price, order);
+        return Objects.hash(id, name, price);
     }
 }

@@ -1,9 +1,11 @@
 package service;
 
 import answer.king.dto.ItemDto;
+import answer.king.dto.LineItemDto;
 import answer.king.dto.OrderDto;
 import answer.king.dto.ReceiptDto;
 import answer.king.entity.Item;
+import answer.king.entity.LineItem;
 import answer.king.entity.Order;
 import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
@@ -22,10 +24,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -101,22 +103,25 @@ public class OrderServiceTest {
 
     @Test
     public void testAddItem() throws NotFoundException {
-        final OrderDto expectedOrder = new OrderDto(false, BigDecimal.ONE, null);
-        final ItemDto expectedItemDto = new ItemDto("Item 1", BigDecimal.ONE, expectedOrder);
-        expectedOrder.getItems().add(expectedItemDto);
+        final Order order = new Order(false, new BigDecimal("100.00"), null);
+        final Item item = new Item("Test Item", new BigDecimal("100.00"));
+        final LineItem lineItem = new LineItem(new BigDecimal("100.00"), 1, order, item);
+        order.getItems().add(lineItem);
 
-        when(mockItemRepository.findOne(anyLong())).thenReturn(new Item("Item 1", BigDecimal.ONE));
-        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.ZERO, null));
+        final OrderDto orderDto = new OrderDto(false, new BigDecimal("100.00"), null);
+        final ItemDto itemDto = new ItemDto("Test Item", new BigDecimal("100.00"));
+        final LineItemDto lineItemDto = new LineItemDto(new BigDecimal("100.00"), 1, orderDto, itemDto);
+        orderDto.getItems().add(lineItemDto);
 
-        when(mockOrderRepository.save(any(Order.class))).thenReturn(new Order(false, BigDecimal.ONE,
-                Collections.singletonList(new Item("Item 1", BigDecimal.ONE))));
+        when(mockItemRepository.findOne(anyLong())).thenReturn(item);
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
+        when(mockOrderRepository.save(any(Order.class))).thenReturn(order);
+        when(mockOrderMapper.mapToDto(any(Order.class))).thenReturn(orderDto);
 
-        when(mockOrderMapper.mapToDto(any(Order.class))).thenReturn(new OrderDto(false, BigDecimal.ONE,
-                Collections.singletonList(new ItemDto("Item 1", BigDecimal.ONE, null))));
+        final OrderDto actualOrder = orderService.addItem(0, 0);
 
-        final OrderDto actualOrder = orderService.addItem(0L, 0L);
-
-        assertEquals(expectedOrder, actualOrder);
+        assertFalse(actualOrder.getItems().isEmpty());
+        assertEquals(lineItemDto, actualOrder.getItems().get(0));
         verify(mockItemRepository, times(1)).findOne(anyLong());
         verify(mockOrderRepository, times(1)).findOne(anyLong());
         verify(mockOrderRepository, times(1)).save(any(Order.class));
@@ -125,12 +130,12 @@ public class OrderServiceTest {
         verifyNoMoreInteractions(mockOrderRepository);
         verifyNoMoreInteractions(mockItemRepository);
         verifyNoMoreInteractions(mockOrderMapper);
+
+        System.out.println(actualOrder);
     }
 
     @Test(expected = NotFoundException.class)
     public void testAddItemWithInvalidOrder() throws NotFoundException {
-        final Item item = new Item("Item 1", BigDecimal.TEN, null);
-
         when(mockOrderRepository.findOne(0L)).thenReturn(null);
 
         orderService.addItem(0L, 0L);
