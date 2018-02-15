@@ -79,13 +79,11 @@ public class OrderControllerTest {
 
     @Test
     public void testAddItemSuccessfully() throws NotFoundException {
-        when(mockService.addItem(0L, 0L)).thenReturn(new OrderDto());
-
-        final ResponseEntity<OrderDto> response = orderController.addItem(0L, 0L);
+        final ResponseEntity<OrderDto> response = orderController.addItem(0L, 0L, 0);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(URI.create("/item/0"), response.getHeaders().getLocation());
-        verify(mockService, times(1)).addItem(anyLong(), anyLong());
+        verify(mockService, times(1)).addItem(anyLong(), anyLong(), anyInt());
         verifyNoMoreInteractions(mockService);
     }
 

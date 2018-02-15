@@ -54,23 +54,26 @@ public class OrderService {
         return orderMapper.mapToDto(entity);
     }
 
-    public OrderDto addItem(long orderId, long itemId) throws NotFoundException {
+    public OrderDto addItem(long orderId, long itemId, int quantity) throws NotFoundException {
         final Order order = get(orderId);
         final Item item = itemRepository.findOne(itemId);
 
         if (order == null || item == null) throw new NotFoundException();
-        return addItemToOrder(order, item);
+        if (quantity <= 0) quantity = 1;
+        return addItemToOrder(order, item, quantity);
     }
 
-    private OrderDto addItemToOrder(Order order, Item item) {
+    private OrderDto addItemToOrder(Order order, Item item, int quantity) {
         final LineItem lineItem = new LineItem();
         lineItem.setItem(item);
-        lineItem.setPrice(item.getPrice());
-        lineItem.setQuantity(1);
         lineItem.setOrder(order);
+        lineItem.setQuantity(quantity);
+        lineItem.setPrice(item.getPrice());
 
         order.getItems().add(lineItem);
-        order.setTotal(order.getTotal().add(item.getPrice()));
+
+        final BigDecimal totalItemPrice = item.getPrice().multiply(BigDecimal.valueOf(quantity));
+        order.setTotal(order.getTotal().add(totalItemPrice));
 
         // persist and map to dto
         order = orderRepository.save(order);

@@ -24,6 +24,9 @@ public class LineItemDto {
 
     private ItemDto item;
 
+    public LineItemDto() {
+    }
+
     public LineItemDto(BigDecimal price, int quantity) {
         this.price = price;
         this.quantity = quantity;

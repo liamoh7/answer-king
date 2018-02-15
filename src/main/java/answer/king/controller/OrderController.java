@@ -40,8 +40,8 @@ public class OrderController {
     }
 
     @RequestMapping(value = "/{id}/addItem/{itemId}", method = RequestMethod.PUT)
-    public ResponseEntity<OrderDto> addItem(@PathVariable("id") long id, @PathVariable("itemId") long itemId) throws NotFoundException {
-        orderService.addItem(id, itemId);
+    public ResponseEntity<OrderDto> addItem(@PathVariable("id") long id, @PathVariable("itemId") long itemId, @RequestBody int quantity) throws NotFoundException {
+        orderService.addItem(id, itemId, quantity);
         return ResponseEntity.created(URI.create("/item/" + itemId)).build();
     }
 

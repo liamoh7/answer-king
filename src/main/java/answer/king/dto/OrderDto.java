@@ -22,13 +22,13 @@ public class OrderDto {
 
     private List<LineItemDto> items;
 
+    public OrderDto() {
+    }
+
     public OrderDto(boolean paid, BigDecimal total, List<LineItemDto> items) {
         this.paid = paid;
         this.total = total;
         this.items = items;
-    }
-
-    public OrderDto() {
     }
 
     public long getId() {
