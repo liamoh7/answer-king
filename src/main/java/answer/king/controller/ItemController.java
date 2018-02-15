@@ -1,6 +1,7 @@
 package answer.king.controller;
 
 import answer.king.dto.ItemDto;
+import answer.king.error.InvalidPriceException;
 import answer.king.error.NotFoundException;
 import answer.king.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,14 +9,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/item")
 public class ItemController {
-
-    private static final String ITEM_DETAIL_PATH = "/item/{id}";
 
     private final ItemService itemService;
 
@@ -41,5 +41,11 @@ public class ItemController {
     @RequestMapping(path = "/{id}", method = RequestMethod.GET)
     public ResponseEntity<ItemDto> get(@PathVariable(value = "id") long id) throws NotFoundException {
         return ResponseEntity.ok(itemService.getMapped(id));
+    }
+
+    @RequestMapping(path = "/{id}", method = RequestMethod.PUT)
+    public ResponseEntity<ItemDto> updatePrice(@PathVariable(value = "id") long id, @RequestBody BigDecimal updatedPrice) throws NotFoundException, InvalidPriceException {
+        // find item, update price, return item to user
+        return ResponseEntity.ok(itemService.updatePrice(id, updatedPrice));
     }
 }

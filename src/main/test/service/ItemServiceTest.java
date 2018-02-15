@@ -4,6 +4,7 @@ import answer.king.dto.ItemDto;
 import answer.king.dto.OrderDto;
 import answer.king.entity.Item;
 import answer.king.entity.Order;
+import answer.king.error.InvalidPriceException;
 import answer.king.error.NotFoundException;
 import answer.king.repo.ItemRepository;
 import answer.king.service.ItemService;
@@ -110,6 +111,51 @@ public class ItemServiceTest {
 
         assertEquals(expectedDto, actualItem);
         verify(mockRepository, times(1)).findOne(0L);
+        verify(mockMapper, times(1)).mapToDto(any(Item.class));
+        verifyNoMoreInteractions(mockRepository);
+        verifyNoMoreInteractions(mockMapper);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testUpdateItemPriceWithInvalidIdThrowsException() throws NotFoundException, InvalidPriceException {
+        when(mockRepository.findOne(anyLong())).thenReturn(null);
+
+        itemService.updatePrice(0, BigDecimal.ONE);
+    }
+
+    @Test(expected = InvalidPriceException.class)
+    public void testUpdateItemWithNullPriceThrowsException() throws NotFoundException, InvalidPriceException {
+        when(mockRepository.findOne(anyLong())).thenReturn(new Item());
+
+        itemService.updatePrice(0L, null);
+
+        verify(mockRepository, times(1)).findOne(0L);
+        verifyNoMoreInteractions(mockRepository);
+    }
+
+    @Test(expected = InvalidPriceException.class)
+    public void testUpdateItemWithNegativePriceThrowsException() throws NotFoundException, InvalidPriceException {
+        when(mockRepository.findOne(anyLong())).thenReturn(new Item());
+
+        itemService.updatePrice(0L, new BigDecimal("-1.00"));
+
+        verify(mockRepository, times(1)).findOne(0L);
+        verifyNoMoreInteractions(mockRepository);
+    }
+
+    @Test
+    public void testUpdatePrice() throws NotFoundException, InvalidPriceException {
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("32.00"));
+
+        when(mockRepository.findOne(anyLong())).thenReturn(new Item("Item 1", BigDecimal.TEN));
+        when(mockRepository.save(any(Item.class))).thenReturn(new Item("Item 1", new BigDecimal("32.00")));
+        when(mockMapper.mapToDto(any(Item.class))).thenReturn(item);
+
+        final ItemDto actualItem = itemService.updatePrice(0L, new BigDecimal("32.00"));
+
+        assertEquals(item, actualItem);
+        verify(mockRepository, times(1)).findOne(anyLong());
+        verify(mockRepository, times(1)).save(any(Item.class));
         verify(mockMapper, times(1)).mapToDto(any(Item.class));
         verifyNoMoreInteractions(mockRepository);
         verifyNoMoreInteractions(mockMapper);

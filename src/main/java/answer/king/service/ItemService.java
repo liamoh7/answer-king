@@ -2,6 +2,7 @@ package answer.king.service;
 
 import answer.king.dto.ItemDto;
 import answer.king.entity.Item;
+import answer.king.error.InvalidPriceException;
 import answer.king.error.NotFoundException;
 import answer.king.repo.ItemRepository;
 import answer.king.service.mapper.Mapper;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,5 +46,17 @@ public class ItemService {
     public ItemDto save(ItemDto item) {
         final Item entity = itemMapper.mapToEntity(item);
         return itemMapper.mapToDto(itemRepository.save(entity));
+    }
+
+    public ItemDto updatePrice(long id, BigDecimal updatedPrice) throws NotFoundException, InvalidPriceException {
+        Item item = get(id);
+
+        if (updatedPrice == null || updatedPrice.signum() == -1 || updatedPrice.compareTo(item.getPrice()) == 0) {
+            throw new InvalidPriceException();
+        }
+
+        item.setPrice(updatedPrice);
+        item = itemRepository.save(item);
+        return itemMapper.mapToDto(item);
     }
 }

@@ -3,6 +3,7 @@ package controller;
 import answer.king.controller.ItemController;
 import answer.king.dto.ItemDto;
 import answer.king.dto.OrderDto;
+import answer.king.error.InvalidPriceException;
 import answer.king.error.NotFoundException;
 import answer.king.service.ItemService;
 import org.junit.Before;
@@ -52,19 +53,6 @@ public class ItemControllerTest {
         verify(mockService, times(1)).getMapped(anyLong());
         verifyNoMoreInteractions(mockService);
     }
-
-    // If exception thrown within service, null could never be an issue, so test shouldn't be required
-//    @Test(expected = NotFoundException.class)
-//    public void testGetInvalidId() throws NotFoundException {
-//        when(mockService.get(anyLong())).thenReturn(null);
-//
-//        final ResponseEntity<ItemDto> response = itemController.get(-1L);
-//
-//        assertNull(response.getBody());
-//        assertTrue(response.getStatusCode() == HttpStatus.NOT_FOUND);
-//        verify(mockService, times(1)).getMapped(anyLong());
-//        verifyNoMoreInteractions(mockService);
-//    }
 
     @Test
     public void testGetAllSuccess() {
@@ -174,6 +162,19 @@ public class ItemControllerTest {
         verify(mockService, times(1)).save(any(ItemDto.class));
         verifyNoMoreInteractions(mockService);
         validateWithNoViolations(item);
+    }
+
+    @Test
+    public void testUpdatePrice() throws NotFoundException, InvalidPriceException {
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("32.85"), null);
+
+        when(mockService.updatePrice(anyLong(), any())).thenReturn(item);
+
+        final ResponseEntity<ItemDto> response = itemController.updatePrice(0L, new BigDecimal("32.85"));
+
+        assertTrue(response.getStatusCode() == HttpStatus.OK);
+        verify(mockService, times(1)).updatePrice(anyLong(), any());
+        verifyNoMoreInteractions(mockService);
     }
 
     private void validateWithViolation(ItemDto item) {
