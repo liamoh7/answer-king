@@ -110,20 +110,26 @@ public class ReceiptServiceTest {
     }
 
     @Test
-    public void testGet() {
+    public void testGet() throws NotFoundException {
         final Receipt receipt = new Receipt();
         final ReceiptDto expectedDto = new ReceiptDto();
 
         when(mockRepository.findOne(anyLong())).thenReturn(receipt);
         when(mockReceiptMapper.mapToDto(any(Receipt.class))).thenReturn(expectedDto);
 
-        final ReceiptDto actualItem = receiptService.get(0L);
+        final ReceiptDto actualItem = receiptService.getMapped(0L);
 
         assertEquals(expectedDto, actualItem);
         verify(mockRepository, times(1)).findOne(0L);
         verify(mockReceiptMapper, times(1)).mapToDto(any(Receipt.class));
         verifyNoMoreInteractions(mockRepository);
         verifyNoMoreInteractions(mockReceiptMapper);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testGetThrowsNotFoundInvalidID() throws NotFoundException {
+        when(mockRepository.findOne(anyLong())).thenReturn(null);
+        receiptService.get(0L);
     }
 
     @Test

@@ -34,8 +34,14 @@ public class ReceiptService {
         return mapper.mapToDto(repository.findAll());
     }
 
-    public ReceiptDto get(long id) {
-        return mapper.mapToDto(repository.findOne(id));
+    public Receipt get(long id) throws NotFoundException {
+        final Receipt receipt = repository.findOne(id);
+        if (receipt == null) throw new NotFoundException();
+        return receipt;
+    }
+
+    public ReceiptDto getMapped(long id) throws NotFoundException {
+        return mapper.mapToDto(get(id));
     }
 
     public ReceiptDto create(Order order, BigDecimal paymentAmount) throws InvalidPaymentException, NotFoundException {
