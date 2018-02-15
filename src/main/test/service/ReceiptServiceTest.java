@@ -4,6 +4,8 @@ import answer.king.dto.OrderDto;
 import answer.king.dto.ReceiptDto;
 import answer.king.entity.Order;
 import answer.king.entity.Receipt;
+import answer.king.error.InvalidPaymentException;
+import answer.king.error.NotFoundException;
 import answer.king.repo.ReceiptRepository;
 import answer.king.service.ReceiptService;
 import answer.king.service.mapper.OrderMapper;
@@ -21,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -41,21 +42,17 @@ public class ReceiptServiceTest {
         receiptService = new ReceiptService(mockRepository, mockReceiptMapper, mockOrderMapper);
     }
 
-    @Test
-    public void testCreateInvalidOrder() {
-        final ReceiptDto actualReceipt = receiptService.create(null, BigDecimal.ONE);
-
-        assertNull(actualReceipt);
+    @Test(expected = NotFoundException.class)
+    public void testCreateWithInvalidOrderThrowsException() throws NotFoundException, InvalidPaymentException {
+        receiptService.create(null, BigDecimal.ONE);
     }
 
-    @Test
-    public void testCreateInvalidPayment() {
-        final ReceiptDto actualReceipt = receiptService.create(new Order(), null);
-
-        assertNull(actualReceipt);
+    @Test(expected = InvalidPaymentException.class)
+    public void testCreateWithInvalidPaymentThrowsException() throws NotFoundException, InvalidPaymentException {
+        receiptService.create(new Order(), null);
     }
 
-    public void testCreateRepositorySuccess() {
+    public void testCreateRepositorySuccess() throws NotFoundException, InvalidPaymentException {
         final ReceiptDto expectedReceipt = new ReceiptDto();
 
         when(mockOrderMapper.mapToEntity(any(OrderDto.class))).thenReturn(new Order());
@@ -127,6 +124,42 @@ public class ReceiptServiceTest {
         verify(mockReceiptMapper, times(1)).mapToDto(any(Receipt.class));
         verifyNoMoreInteractions(mockRepository);
         verifyNoMoreInteractions(mockReceiptMapper);
+    }
+
+    @Test
+    public void testCalculateZeroChange() throws NotFoundException, InvalidPaymentException {
+        final BigDecimal paymentAmount = new BigDecimal("20.00");
+        final BigDecimal orderTotal = new BigDecimal("20.00");
+
+        final Order order = new Order(true, orderTotal, null);
+        final OrderDto orderDto = new OrderDto(true, orderTotal, null);
+
+        final BigDecimal expectedChange = BigDecimal.ZERO;
+
+        when(mockRepository.save(any(Receipt.class))).thenReturn(new Receipt(paymentAmount, order, expectedChange));
+        when(mockReceiptMapper.mapToDto(any(Receipt.class))).thenReturn(new ReceiptDto(paymentAmount, orderDto, BigDecimal.ZERO));
+
+        final ReceiptDto actualReceipt = receiptService.create(order, paymentAmount);
+
+        assertEquals(expectedChange, actualReceipt.getChange());
+    }
+
+    @Test
+    public void testCalculateChange() throws NotFoundException, InvalidPaymentException {
+        final BigDecimal paymentAmount = new BigDecimal("20.00");
+        final BigDecimal orderTotal = new BigDecimal("30.99");
+
+        final Order order = new Order(true, orderTotal, null);
+        final OrderDto orderDto = new OrderDto(true, orderTotal, null);
+
+        final BigDecimal expectedChange = new BigDecimal("9.99");
+
+        when(mockRepository.save(any(Receipt.class))).thenReturn(new Receipt(paymentAmount, order, expectedChange));
+        when(mockReceiptMapper.mapToDto(any(Receipt.class))).thenReturn(new ReceiptDto(paymentAmount, orderDto, new BigDecimal("9.99")));
+
+        final ReceiptDto actualReceipt = receiptService.create(order, paymentAmount);
+
+        assertEquals(expectedChange, actualReceipt.getChange());
     }
 
     @After

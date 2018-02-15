@@ -20,9 +20,6 @@ public class Order {
     @Digits(integer = 10, fraction = 2)
     private BigDecimal total = BigDecimal.ZERO;
 
-    @Digits(integer = 10, fraction = 2)
-    private BigDecimal change = BigDecimal.ZERO;
-
     @OneToMany(mappedBy = "order", cascade = {CascadeType.ALL, CascadeType.PERSIST})
     private List<Item> items = new ArrayList<>();
 
@@ -68,11 +65,4 @@ public class Order {
         this.total = total;
     }
 
-    public BigDecimal getChange() {
-        return change;
-    }
-
-    public void setChange(BigDecimal change) {
-        this.change = change;
-    }
 }

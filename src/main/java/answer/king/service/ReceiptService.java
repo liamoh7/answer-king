@@ -4,6 +4,8 @@ import answer.king.dto.OrderDto;
 import answer.king.dto.ReceiptDto;
 import answer.king.entity.Order;
 import answer.king.entity.Receipt;
+import answer.king.error.InvalidPaymentException;
+import answer.king.error.NotFoundException;
 import answer.king.repo.ReceiptRepository;
 import answer.king.service.mapper.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,14 +38,23 @@ public class ReceiptService {
         return mapper.mapToDto(repository.findOne(id));
     }
 
-    public ReceiptDto create(Order order, BigDecimal paymentAmount) {
-        if (order == null || paymentAmount == null) return null;
+    public ReceiptDto create(Order order, BigDecimal paymentAmount) throws InvalidPaymentException, NotFoundException {
+        if (order == null) throw new NotFoundException();
+        if (paymentAmount == null) throw new InvalidPaymentException();
 
-        final Receipt receipt = new Receipt();
+        final BigDecimal change = calculateChange(paymentAmount, order.getTotal());
+
+        Receipt receipt = new Receipt();
         receipt.setOrder(order);
         receipt.setPayment(paymentAmount);
+        receipt.setChange(change);
 
-        final Receipt entity = repository.save(receipt);
-        return mapper.mapToDto(entity);
+        receipt = repository.save(receipt);
+        return mapper.mapToDto(receipt);
+    }
+
+    private BigDecimal calculateChange(BigDecimal paymentAmount, BigDecimal orderTotal) {
+        final BigDecimal change = paymentAmount.subtract(orderTotal);
+        return change.signum() != -1 ? change : BigDecimal.ZERO;
     }
 }

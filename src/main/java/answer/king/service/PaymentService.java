@@ -29,14 +29,6 @@ public class PaymentService {
 
         order.setPaid(true);
 
-        final BigDecimal change = calculateChange(paymentAmount, order.getTotal());
-        order.setChange(change);
-
         return receiptService.create(order, paymentAmount);
-    }
-
-    private BigDecimal calculateChange(BigDecimal paymentAmount, BigDecimal orderTotal) {
-        final BigDecimal change = paymentAmount.subtract(orderTotal);
-        return change.signum() != -1 ? change : BigDecimal.ZERO;
     }
 }

@@ -19,6 +19,9 @@ public class ReceiptDto {
     @NotNull
     private OrderDto order;
 
+    @Digits(integer = 10, fraction = 2)
+    private BigDecimal change = BigDecimal.ZERO;
+
     public ReceiptDto() {
     }
 
@@ -27,13 +30,10 @@ public class ReceiptDto {
         this.order = order;
     }
 
-    public BigDecimal getChange() {
-        final BigDecimal totalOrderPrice = order.getItems()
-                .stream()
-                .map(ItemDto::getPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        return payment.subtract(totalOrderPrice);
+    public ReceiptDto(BigDecimal payment, OrderDto order, BigDecimal change) {
+        this.payment = payment;
+        this.order = order;
+        this.change = change;
     }
 
     public long getId() {
@@ -60,6 +60,14 @@ public class ReceiptDto {
         this.order = order;
     }
 
+    public BigDecimal getChange() {
+        return change;
+    }
+
+    public void setChange(BigDecimal change) {
+        this.change = change;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -67,11 +75,13 @@ public class ReceiptDto {
         ReceiptDto that = (ReceiptDto) o;
         return id == that.id &&
                 Objects.equals(payment, that.payment) &&
-                Objects.equals(order, that.order);
+                Objects.equals(order, that.order) &&
+                Objects.equals(change, that.change);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, payment, order);
+
+        return Objects.hash(id, payment, order, change);
     }
 }
