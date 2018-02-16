@@ -24,15 +24,15 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ItemRepository itemRepository;
     private final OrderMapper orderMapper;
-    private final ReceiptService receiptService;
+    private final PaymentService paymentService;
 
     @Autowired
     public OrderService(OrderRepository orderRepository, ItemRepository itemRepository,
-                        OrderMapper orderMapper, ReceiptService receiptService) {
+                        OrderMapper orderMapper, PaymentService paymentService) {
         this.orderRepository = orderRepository;
         this.itemRepository = itemRepository;
         this.orderMapper = orderMapper;
-        this.receiptService = receiptService;
+        this.paymentService = paymentService;
     }
 
     public Order get(long id) throws NotFoundException {
@@ -87,7 +87,6 @@ public class OrderService {
 
         final Order order = get(id);
 
-        order.setPaid(true);
-        return receiptService.create(order, payment);
+        return paymentService.pay(payment, order);
     }
 }
