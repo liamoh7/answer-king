@@ -37,7 +37,7 @@ public class Application extends SpringBootServletInitializer {
 
     @Bean
     public Docket swaggerSpringMvcPlugin() {
-        Predicate<String> apiPaths = or(regex("/order.*"), regex("/item.*"));
+        Predicate<String> apiPaths = or(regex("/order.*"), regex("/item.*"), (regex("/receipt.*")));
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
                 .paths(apiPaths)
