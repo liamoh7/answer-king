@@ -6,7 +6,6 @@ import answer.king.dto.ReceiptDto;
 import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
 import answer.king.service.OrderService;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -110,10 +109,5 @@ public class OrderControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(mockService, times(1)).pay(1L, BigDecimal.ONE);
         verifyNoMoreInteractions(mockService);
-    }
-
-    @After
-    public void tearDown() {
-
     }
 }

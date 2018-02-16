@@ -7,7 +7,6 @@ import answer.king.error.NotFoundException;
 import answer.king.repo.ItemRepository;
 import answer.king.service.ItemService;
 import answer.king.service.mapper.Mapper;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -157,10 +156,5 @@ public class ItemServiceTest {
         verify(mockMapper, times(1)).mapToDto(any(Item.class));
         verifyNoMoreInteractions(mockRepository);
         verifyNoMoreInteractions(mockMapper);
-    }
-
-    @After
-    public void tearDown() {
-
     }
 }

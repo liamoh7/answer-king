@@ -4,7 +4,6 @@ import answer.king.controller.ReceiptController;
 import answer.king.dto.ReceiptDto;
 import answer.king.error.NotFoundException;
 import answer.king.service.ReceiptService;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,10 +56,5 @@ public class ReceiptControllerTest {
         assertTrue(response.getStatusCode() == HttpStatus.OK);
         verify(mockReceiptService, times(1)).getAll();
         verifyNoMoreInteractions(mockReceiptService);
-    }
-
-    @After
-    public void tearDown() {
-
     }
 }

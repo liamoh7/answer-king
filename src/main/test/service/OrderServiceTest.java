@@ -14,7 +14,6 @@ import answer.king.repo.OrderRepository;
 import answer.king.service.OrderService;
 import answer.king.service.PaymentService;
 import answer.king.service.mapper.OrderMapper;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -257,10 +256,5 @@ public class OrderServiceTest {
         verifyNoMoreInteractions(mockOrderRepository);
         verifyNoMoreInteractions(mockItemRepository);
         verifyNoMoreInteractions(mockOrderMapper);
-    }
-
-    @After
-    public void tearDown() {
-
     }
 }

@@ -7,7 +7,6 @@ import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
 import answer.king.service.PaymentService;
 import answer.king.service.ReceiptService;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -73,10 +72,5 @@ public class PaymentServiceTest {
         final ReceiptDto actualReceipt = paymentService.pay(paymentAmount, order);
 
         assertTrue(actualReceipt.getOrder().isPaid());
-    }
-
-    @After
-    public void tearDown() {
-
     }
 }

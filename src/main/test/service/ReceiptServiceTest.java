@@ -10,7 +10,6 @@ import answer.king.repo.ReceiptRepository;
 import answer.king.service.ReceiptService;
 import answer.king.service.mapper.OrderMapper;
 import answer.king.service.mapper.ReceiptMapper;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -166,10 +165,5 @@ public class ReceiptServiceTest {
         final ReceiptDto actualReceipt = receiptService.create(order, paymentAmount);
 
         assertEquals(expectedChange, actualReceipt.getChange());
-    }
-
-    @After
-    public void tearDown() {
-
     }
 }
