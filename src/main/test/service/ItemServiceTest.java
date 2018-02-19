@@ -61,10 +61,9 @@ public class ItemServiceTest {
 
     @Test
     public void getAllItemsWhenNoneAreAvailableReturnsEmptyList() {
-        final List<Item> entities = Collections.emptyList();
         final List<ItemDto> expectedDtos = Collections.emptyList();
 
-        when(mockRepository.findAll()).thenReturn(entities);
+        when(mockRepository.findAll()).thenReturn(null);
         when(mockMapper.mapToDto(anyList())).thenReturn(expectedDtos);
 
         final List<ItemDto> actualItems = itemService.getAll();

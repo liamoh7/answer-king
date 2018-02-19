@@ -3,6 +3,7 @@ package answer.king.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.Digits;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -13,6 +14,7 @@ public class ReceiptDto {
     private long id;
 
     @NotNull
+    @Min(value = 0)
     @Digits(integer = 10, fraction = 2)
     private BigDecimal payment = BigDecimal.ZERO;
 

@@ -7,7 +7,7 @@ import answer.king.entity.LineItem;
 import answer.king.entity.Order;
 import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
-import answer.king.repo.ItemRepository;
+import answer.king.error.OrderAlreadyPaidException;
 import answer.king.repo.OrderRepository;
 import answer.king.service.mapper.OrderMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,15 +22,15 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final ItemRepository itemRepository;
+    private final ItemService itemService;
     private final OrderMapper orderMapper;
     private final PaymentService paymentService;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, ItemRepository itemRepository,
+    public OrderService(OrderRepository orderRepository, ItemService itemService,
                         OrderMapper orderMapper, PaymentService paymentService) {
         this.orderRepository = orderRepository;
-        this.itemRepository = itemRepository;
+        this.itemService = itemService;
         this.orderMapper = orderMapper;
         this.paymentService = paymentService;
     }
@@ -56,9 +56,8 @@ public class OrderService {
 
     public OrderDto addItem(long orderId, long itemId, int quantity) throws NotFoundException {
         final Order order = get(orderId);
-        final Item item = itemRepository.findOne(itemId);
+        final Item item = itemService.get(itemId);
 
-        if (order == null || item == null) throw new NotFoundException();
         if (quantity <= 0) quantity = 1;
         return addItemToOrder(order, item, quantity);
     }
@@ -80,7 +79,7 @@ public class OrderService {
         return orderMapper.mapToDto(order);
     }
 
-    public ReceiptDto pay(long id, BigDecimal payment) throws InvalidPaymentException, NotFoundException {
+    public ReceiptDto pay(long id, BigDecimal payment) throws InvalidPaymentException, NotFoundException, OrderAlreadyPaidException {
         if (payment == null || payment.signum() == -1) {
             throw new InvalidPaymentException();
         }

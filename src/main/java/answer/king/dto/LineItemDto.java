@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.Digits;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -17,6 +18,7 @@ public class LineItemDto {
     @Digits(integer = 15, fraction = 2)
     private BigDecimal price;
 
+    @Min(value = 1)
     private int quantity;
 
     @JsonIgnore

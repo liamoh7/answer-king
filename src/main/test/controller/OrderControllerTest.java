@@ -5,6 +5,7 @@ import answer.king.dto.OrderDto;
 import answer.king.dto.ReceiptDto;
 import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
+import answer.king.error.OrderAlreadyPaidException;
 import answer.king.service.OrderService;
 import org.junit.Before;
 import org.junit.Test;
@@ -100,7 +101,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void payingForOrderReturnsSuccess() throws InvalidPaymentException, NotFoundException {
+    public void payingForOrderReturnsSuccess() throws InvalidPaymentException, NotFoundException, OrderAlreadyPaidException {
         when(mockService.pay(anyLong(), any())).thenReturn(new ReceiptDto());
 
         final ResponseEntity<ReceiptDto> response = orderController.pay(1L, BigDecimal.ONE);

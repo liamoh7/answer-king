@@ -51,7 +51,7 @@ public class ItemService {
     public ItemDto updatePrice(long id, BigDecimal updatedPrice) throws NotFoundException, InvalidPriceException {
         Item item = get(id);
 
-        if (updatedPrice == null || updatedPrice.signum() == -1 || updatedPrice.compareTo(item.getPrice()) == 0) {
+        if (updatedPrice == null || updatedPrice.signum() == -1) {
             throw new InvalidPriceException();
         }
 

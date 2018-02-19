@@ -4,6 +4,7 @@ import answer.king.dto.ReceiptDto;
 import answer.king.entity.Order;
 import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
+import answer.king.error.OrderAlreadyPaidException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +20,7 @@ public class PaymentService {
         this.receiptService = receiptService;
     }
 
-    public ReceiptDto pay(BigDecimal paymentAmount, Order order) throws NotFoundException, InvalidPaymentException {
+    public ReceiptDto pay(BigDecimal paymentAmount, Order order) throws NotFoundException, InvalidPaymentException, OrderAlreadyPaidException {
         if (order == null) throw new NotFoundException();
 
         // validate payments
@@ -27,6 +28,7 @@ public class PaymentService {
             throw new InvalidPaymentException();
         }
 
+        if(order.isPaid()) throw new OrderAlreadyPaidException();
         order.setPaid(true);
 
         return receiptService.create(order, paymentAmount);

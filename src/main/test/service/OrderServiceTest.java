@@ -9,8 +9,9 @@ import answer.king.entity.LineItem;
 import answer.king.entity.Order;
 import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
-import answer.king.repo.ItemRepository;
+import answer.king.error.OrderAlreadyPaidException;
 import answer.king.repo.OrderRepository;
+import answer.king.service.ItemService;
 import answer.king.service.OrderService;
 import answer.king.service.PaymentService;
 import answer.king.service.mapper.OrderMapper;
@@ -35,7 +36,7 @@ public class OrderServiceTest {
     @Mock
     private OrderRepository mockOrderRepository;
     @Mock
-    private ItemRepository mockItemRepository;
+    private ItemService mockItemService;
     @Mock
     private OrderMapper mockOrderMapper;
     @Mock
@@ -45,7 +46,7 @@ public class OrderServiceTest {
 
     @Before
     public void setUp() {
-        orderService = new OrderService(mockOrderRepository, mockItemRepository, mockOrderMapper, mockPaymentService);
+        orderService = new OrderService(mockOrderRepository, mockItemService, mockOrderMapper, mockPaymentService);
     }
 
     @Test
@@ -79,14 +80,14 @@ public class OrderServiceTest {
     @Test(expected = NotFoundException.class)
     public void retrievalOfInvalidItemIdsWhenAddingToOrdersThrowsException() throws NotFoundException {
         when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order());
-        when(mockItemRepository.findOne(anyLong())).thenReturn(null);
+        when(mockItemService.get(anyLong())).thenThrow(NotFoundException.class);
 
         orderService.addItem(1L, 1L, 1);
 
         verify(mockOrderRepository, times(1)).findOne(anyLong());
-        verify(mockItemRepository, times(1)).findOne(anyLong());
+        verify(mockItemService, times(1)).get(anyLong());
         verifyNoMoreInteractions(mockOrderRepository);
-        verifyNoMoreInteractions(mockItemRepository);
+        verifyNoMoreInteractions(mockItemService);
     }
 
     @Test(expected = NotFoundException.class)
@@ -100,7 +101,7 @@ public class OrderServiceTest {
     }
 
     @Test
-    public void addingItemToOrderSuccefully() throws NotFoundException {
+    public void addingItemToOrderSuccessfully() throws NotFoundException {
         final Order order = new Order(false, new BigDecimal("100.00"), null);
         final Item item = new Item("Test Item", new BigDecimal("100.00"));
         final LineItem lineItem = new LineItem(new BigDecimal("100.00"), 1, order, item);
@@ -111,7 +112,7 @@ public class OrderServiceTest {
         final LineItemDto lineItemDto = new LineItemDto(new BigDecimal("100.00"), 1, orderDto, itemDto);
         orderDto.getItems().add(lineItemDto);
 
-        when(mockItemRepository.findOne(anyLong())).thenReturn(item);
+        when(mockItemService.get(anyLong())).thenReturn(item);
         when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
         when(mockOrderRepository.save(any(Order.class))).thenReturn(order);
         when(mockOrderMapper.mapToDto(any(Order.class))).thenReturn(orderDto);
@@ -135,7 +136,7 @@ public class OrderServiceTest {
         final LineItemDto lineItemDto = new LineItemDto(new BigDecimal("100.00"), 1, orderDto, itemDto);
         orderDto.getItems().add(lineItemDto);
 
-        when(mockItemRepository.findOne(anyLong())).thenReturn(item);
+        when(mockItemService.get(anyLong())).thenReturn(item);
         when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
         when(mockOrderRepository.save(any(Order.class))).thenReturn(order);
         when(mockOrderMapper.mapToDto(any(Order.class))).thenReturn(orderDto);
@@ -155,7 +156,7 @@ public class OrderServiceTest {
 
         verify(mockOrderRepository, times(1)).findOne(anyLong());
         verifyNoMoreInteractions(mockOrderRepository);
-        verifyZeroInteractions(mockItemRepository);
+        verifyZeroInteractions(mockItemService);
     }
 
     @Test
@@ -200,7 +201,7 @@ public class OrderServiceTest {
     }
 
     @Test(expected = NotFoundException.class)
-    public void payingForOrderWhenTheOrderIdInvalidThrowsException() throws NotFoundException, InvalidPaymentException {
+    public void payingForOrderWhenTheOrderIdInvalidThrowsException() throws NotFoundException, InvalidPaymentException, OrderAlreadyPaidException {
         when(mockOrderRepository.findOne(anyLong())).thenReturn(null);
 
         orderService.pay(0, BigDecimal.TEN);
@@ -211,7 +212,7 @@ public class OrderServiceTest {
     }
 
     @Test
-    public void payingForOrderWithValidInformationReturnsReceipt() throws NotFoundException, InvalidPaymentException {
+    public void payingForOrderWithValidInformationReturnsReceipt() throws NotFoundException, InvalidPaymentException, OrderAlreadyPaidException {
         final ReceiptDto expectedReceipt = new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, null));
 
         when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.TEN, null));
@@ -227,7 +228,7 @@ public class OrderServiceTest {
     }
 
     @Test(expected = InvalidPaymentException.class)
-    public void payingForOrderWithNullPaymentAmountThrowsException() throws NotFoundException, InvalidPaymentException {
+    public void payingForOrderWithNullPaymentAmountThrowsException() throws NotFoundException, InvalidPaymentException, OrderAlreadyPaidException {
         orderService.pay(0, null);
 
         verifyZeroInteractions(mockOrderRepository);
@@ -235,21 +236,21 @@ public class OrderServiceTest {
     }
 
     @Test(expected = InvalidPaymentException.class)
-    public void payingForOrderWithNegativePaymentAmountThrowsException() throws NotFoundException, InvalidPaymentException {
+    public void payingForOrderWithNegativePaymentAmountThrowsException() throws NotFoundException, InvalidPaymentException, OrderAlreadyPaidException {
         orderService.pay(0, new BigDecimal("-1.00"));
 
         verifyZeroInteractions(mockOrderRepository);
         verifyZeroInteractions(mockPaymentService);
     }
 
-    private void verifyAddItem() {
-        verify(mockItemRepository, times(1)).findOne(anyLong());
+    private void verifyAddItem() throws NotFoundException {
+        verify(mockItemService, times(1)).get(anyLong());
         verify(mockOrderRepository, times(1)).findOne(anyLong());
         verify(mockOrderRepository, times(1)).save(any(Order.class));
         verify(mockOrderMapper, times(1)).mapToDto(any(Order.class));
 
         verifyNoMoreInteractions(mockOrderRepository);
-        verifyNoMoreInteractions(mockItemRepository);
+        verifyNoMoreInteractions(mockItemService);
         verifyNoMoreInteractions(mockOrderMapper);
     }
 }

@@ -4,6 +4,7 @@ import answer.king.dto.OrderDto;
 import answer.king.dto.ReceiptDto;
 import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
+import answer.king.error.OrderAlreadyPaidException;
 import answer.king.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +47,7 @@ public class OrderController {
     }
 
     @RequestMapping(value = "/{id}/pay", method = RequestMethod.PUT)
-    public ResponseEntity<ReceiptDto> pay(@PathVariable("id") long id, @RequestBody BigDecimal payment) throws InvalidPaymentException, NotFoundException {
+    public ResponseEntity<ReceiptDto> pay(@PathVariable("id") long id, @RequestBody BigDecimal payment) throws InvalidPaymentException, NotFoundException, OrderAlreadyPaidException {
         return ResponseEntity.ok(orderService.pay(id, payment));
     }
 }

@@ -10,15 +10,15 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({InvalidPaymentException.class, InvalidPriceException.class})
+    @ExceptionHandler({InvalidPaymentException.class, InvalidPriceException.class, OrderAlreadyPaidException.class})
     public ResponseEntity<ErrorResponse> handleInvalidPayment(Exception e) {
-        final ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        final ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage(), e);
         return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler({NotFoundException.class})
     public ResponseEntity<ErrorResponse> handleEntityNotFound(Exception e) {
-        final ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
+        final ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), e);
         return new ResponseEntity<>(error, new HttpHeaders(), HttpStatus.NOT_FOUND);
     }
 }

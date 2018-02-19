@@ -40,7 +40,7 @@ public class Order {
         this.id = id;
     }
 
-    public Boolean getPaid() {
+    public Boolean isPaid() {
         return paid;
     }
 
