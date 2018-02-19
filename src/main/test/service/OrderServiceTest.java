@@ -250,6 +250,20 @@ public class OrderServiceTest {
         verifyZeroInteractions(mockPaymentService);
     }
 
+    @Test(expected = InvalidPaymentException.class)
+    public void payingForOrderWithNoItemsShouldResultInNoPaymentOccurring() throws NotFoundException, InvalidPaymentException, OrderAlreadyPaidException {
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.ZERO, new ArrayList<>()));
+
+        orderService.pay(0, BigDecimal.TEN);
+    }
+
+    @Test(expected = InvalidPaymentException.class)
+    public void payingForOrderWithNullItemsCollectionShouldResultInNoPaymentOccurring() throws NotFoundException, InvalidPaymentException, OrderAlreadyPaidException {
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.ZERO, null));
+
+        orderService.pay(0, BigDecimal.TEN);
+    }
+
     private void verifyAddItem() throws NotFoundException {
         verify(mockItemService, times(1)).get(anyLong());
         verify(mockOrderRepository, times(1)).findOne(anyLong());
