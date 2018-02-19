@@ -95,12 +95,11 @@ public class LineItemDto {
         return id == that.id &&
                 quantity == that.quantity &&
                 Objects.equals(price, that.price) &&
-                Objects.equals(order.getId(), that.order.getId()) &&
                 Objects.equals(item, that.item);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, price, quantity, order.getId(), item);
+        return Objects.hash(id, price, quantity, item);
     }
 }

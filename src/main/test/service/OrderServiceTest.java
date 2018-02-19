@@ -24,6 +24,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -220,14 +221,16 @@ public class OrderServiceTest {
 
     @Test
     public void payingForOrderWithValidInformationReturnsReceipt() throws NotFoundException, InvalidPaymentException, OrderAlreadyPaidException {
-        final ReceiptDto expectedReceipt = new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, null));
+        final ReceiptDto receiptDto = new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, Collections.singletonList(new LineItemDto())));
 
-        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.TEN, null));
-        when(mockPaymentService.pay(any(BigDecimal.class), any(Order.class))).thenReturn(new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, null)));
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.TEN, Collections.singletonList(new LineItem())));
+        when(mockPaymentService.pay(any(BigDecimal.class), any(Order.class)))
+                .thenReturn(new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, Collections.singletonList(new LineItemDto()))));
+
 
         final ReceiptDto actualReceipt = orderService.pay(0, BigDecimal.TEN);
 
-        assertEquals(expectedReceipt, actualReceipt);
+        assertEquals(receiptDto, actualReceipt);
         verify(mockOrderRepository, times(1)).findOne(anyLong());
         verify(mockPaymentService, times(1)).pay(any(BigDecimal.class), any(Order.class));
         verifyNoMoreInteractions(mockOrderRepository);

@@ -87,7 +87,7 @@ public class OrderService {
 
         final Order order = get(id);
 
-        if (order.getItems() == null || order.getItems().isEmpty()) throw new InvalidPaymentException();
+        if (order.getItems().isEmpty()) throw new InvalidPaymentException();
 
         return paymentService.pay(payment, order);
     }
