@@ -54,10 +54,11 @@ public class OrderService {
         return orderMapper.mapToDto(entity);
     }
 
-    public OrderDto addItem(long orderId, long itemId, int quantity) throws NotFoundException {
+    public OrderDto addItem(long orderId, long itemId, int quantity) throws NotFoundException, OrderAlreadyPaidException {
         final Order order = get(orderId);
         final Item item = itemService.get(itemId);
 
+        if (order.isPaid()) throw new OrderAlreadyPaidException();
         if (quantity <= 0) quantity = 1;
         return addItemToOrder(order, item, quantity);
     }

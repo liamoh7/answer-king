@@ -78,7 +78,7 @@ public class OrderServiceTest {
     }
 
     @Test(expected = NotFoundException.class)
-    public void retrievalOfInvalidItemIdsWhenAddingToOrdersThrowsException() throws NotFoundException {
+    public void retrievalOfInvalidItemIdsWhenAddingToOrdersThrowsException() throws NotFoundException, OrderAlreadyPaidException {
         when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order());
         when(mockItemService.get(anyLong())).thenThrow(NotFoundException.class);
 
@@ -91,7 +91,7 @@ public class OrderServiceTest {
     }
 
     @Test(expected = NotFoundException.class)
-    public void unavailableOrderWhenAddingItemToItThrowsException() throws NotFoundException {
+    public void unavailableOrderWhenAddingItemToItThrowsException() throws NotFoundException, OrderAlreadyPaidException {
         when(mockOrderRepository.findOne(anyLong())).thenReturn(null);
 
         orderService.addItem(1L, 1L, 1);
@@ -100,8 +100,15 @@ public class OrderServiceTest {
         verifyNoMoreInteractions(mockOrderRepository);
     }
 
+    @Test(expected = OrderAlreadyPaidException.class)
+    public void whenAddingItemToAnAlreadyPaidOrderThrowException() throws NotFoundException, OrderAlreadyPaidException {
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(true, BigDecimal.TEN, null));
+
+        orderService.addItem(0, 0, 1);
+    }
+
     @Test
-    public void addingItemToOrderSuccessfully() throws NotFoundException {
+    public void addingItemToOrderSuccessfully() throws NotFoundException, OrderAlreadyPaidException {
         final Order order = new Order(false, new BigDecimal("100.00"), null);
         final Item item = new Item("Test Item", new BigDecimal("100.00"));
         final LineItem lineItem = new LineItem(new BigDecimal("100.00"), 1, order, item);
@@ -125,7 +132,7 @@ public class OrderServiceTest {
     }
 
     @Test
-    public void addingItemWhenQuantityLessThanOneIsSpecfiedDefaultsToOne() throws NotFoundException {
+    public void addingItemWhenQuantityLessThanOneIsSpecfiedDefaultsToOne() throws NotFoundException, OrderAlreadyPaidException {
         final Order order = new Order(false, new BigDecimal("100.00"), null);
         final Item item = new Item("Test Item", new BigDecimal("100.00"));
         final LineItem lineItem = new LineItem(new BigDecimal("100.00"), 1, order, item);
@@ -149,7 +156,7 @@ public class OrderServiceTest {
     }
 
     @Test(expected = NotFoundException.class)
-    public void addingItemToAnInvalidOrderThrowsException() throws NotFoundException {
+    public void addingItemToAnInvalidOrderThrowsException() throws NotFoundException, OrderAlreadyPaidException {
         when(mockOrderRepository.findOne(0L)).thenReturn(null);
 
         orderService.addItem(0L, 0L, 1);

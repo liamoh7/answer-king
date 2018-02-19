@@ -78,7 +78,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void addValidItemReturnsSuccessful() throws NotFoundException {
+    public void addValidItemReturnsSuccessful() throws NotFoundException, OrderAlreadyPaidException {
         final ResponseEntity<OrderDto> response = orderController.addItem(0L, 0L, 0);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
