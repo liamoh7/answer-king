@@ -37,7 +37,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void testGetValidId() throws NotFoundException {
+    public void getOrderReturnsOrderWithAValidId() throws NotFoundException {
         final OrderDto expectedDto = new OrderDto();
         when(mockService.getMapped(anyLong())).thenReturn(new OrderDto());
 
@@ -50,7 +50,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void testGetAllSuccess() {
+    public void getAllOrdersReturnsAListOfOrdersSuccessfully() {
         final List<OrderDto> expectedOrders = Arrays.asList(new OrderDto(), new OrderDto());
         when(mockService.getAll()).thenReturn(Arrays.asList(new OrderDto(), new OrderDto()));
 
@@ -63,7 +63,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void testGetAllEmptyReturnsSuccess() {
+    public void getAllOrdersReturnsEmptyListWhenNoOrdersAvailable() {
         final List<OrderDto> expectedOrders = new ArrayList<>();
         when(mockService.getAll()).thenReturn(new ArrayList<>());
 
@@ -77,7 +77,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void testAddItemSuccessfully() throws NotFoundException {
+    public void addValidItemReturnsSuccessful() throws NotFoundException {
         final ResponseEntity<OrderDto> response = orderController.addItem(0L, 0L, 0);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -87,7 +87,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void testCreate() {
+    public void creatingNewOrderReturnsSuccessful() {
         final OrderDto expectedOrder = new OrderDto();
         when(mockService.save(expectedOrder)).thenReturn(new OrderDto());
 
@@ -100,7 +100,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void testPaySuccess() throws InvalidPaymentException, NotFoundException {
+    public void payingForOrderReturnsSuccess() throws InvalidPaymentException, NotFoundException {
         when(mockService.pay(anyLong(), any())).thenReturn(new ReceiptDto());
 
         final ResponseEntity<ReceiptDto> response = orderController.pay(1L, BigDecimal.ONE);

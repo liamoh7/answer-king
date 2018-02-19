@@ -32,22 +32,22 @@ public class PaymentServiceTest {
     }
 
     @Test(expected = NotFoundException.class)
-    public void testPayNullOrderThrowsException() throws NotFoundException, InvalidPaymentException {
+    public void payingWhenTheOrderIsNullThrowsException() throws NotFoundException, InvalidPaymentException {
         paymentService.pay(BigDecimal.TEN, null);
     }
 
     @Test(expected = InvalidPaymentException.class)
-    public void testPayNullAmountThrowsException() throws NotFoundException, InvalidPaymentException {
+    public void payingWhenAmountIsNullThrowsException() throws NotFoundException, InvalidPaymentException {
         paymentService.pay(null, new Order());
     }
 
     @Test(expected = InvalidPaymentException.class)
-    public void testPayAmountLessThanOrderTotal() throws NotFoundException, InvalidPaymentException {
+    public void payingWhenAmountIsLessThanOrderTotalThrwosException() throws NotFoundException, InvalidPaymentException {
         paymentService.pay(BigDecimal.ONE, new Order(false, BigDecimal.TEN, null));
     }
 
     @Test
-    public void testPayAmountEqualToOrderTotalAllowsPayment() throws NotFoundException, InvalidPaymentException {
+    public void whenPayAmountIsEqualToOrderTotalPaymentIsAllowed() throws NotFoundException, InvalidPaymentException {
         // just testing to ensure the payment provided is valid, nothing else
         final Order order = new Order(false, BigDecimal.TEN, null);
         final BigDecimal paymentAmount = new BigDecimal("100.00");
@@ -61,7 +61,7 @@ public class PaymentServiceTest {
     }
 
     @Test
-    public void testPayAmountGreaterThanOrderTotalAllowsPayment() throws NotFoundException, InvalidPaymentException {
+    public void whenPayAmountIsGreaterThanOrderTotalPaymentIsAllowed() throws NotFoundException, InvalidPaymentException {
         final Order order = new Order(false, new BigDecimal("5.00"), null);
         final BigDecimal paymentAmount = new BigDecimal("5.01");
         final OrderDto expectedOrder = new OrderDto(true, new BigDecimal("5.00"), null);

@@ -41,7 +41,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    public void testGet() throws NotFoundException {
+    public void getItemReturnsItemWithOkResponse() throws NotFoundException {
         final ItemDto expectedItem = new ItemDto("Test 1", BigDecimal.ZERO);
         when(mockService.getMapped(anyLong())).thenReturn(expectedItem);
 
@@ -54,7 +54,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    public void testGetAllSuccess() {
+    public void getAllItemsReturnsListOfItemsSuccessfully() {
         final List<ItemDto> items = Arrays.asList(new ItemDto(), new ItemDto());
         when(mockService.getAll()).thenReturn(items);
 
@@ -67,7 +67,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    public void testGetAllEmptyReturnsSuccess() {
+    public void getAllItemsReturnsEmptyList() {
         final List<ItemDto> items = new ArrayList<>();
         when(mockService.getAll()).thenReturn(items);
 
@@ -81,8 +81,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    public void testCreateValidData() {
-        // TODO: 13/02/2018 Test for URI
+    public void itemCreateSucceedsWithValidItemData() {
         final ItemDto item = new ItemDto("Test Item", BigDecimal.ONE);
         when(mockService.save(any(ItemDto.class))).thenReturn(item);
 
@@ -96,7 +95,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    public void testCreateReturnsNull() {
+    public void itemCreateReturningNullReturnsBadRequestResponse() {
         when(mockService.save(any(ItemDto.class))).thenReturn(null);
 
         final ResponseEntity<ItemDto> response = itemController.create(new ItemDto());
@@ -107,50 +106,85 @@ public class ItemControllerTest {
     }
 
     @Test
-    public void testInvalidNameWithNull() {
+    public void nameInvalidWhenNull() {
         final ItemDto item = new ItemDto(null, BigDecimal.ONE);
         validateWithViolation(item);
     }
 
     @Test
-    public void testInvalidNameWithInvalidLength() {
-        // TODO: 13/02/2018 Fix null order
+    public void nameInvalidWhenLengthIsEqualToZero() {
         final ItemDto item = new ItemDto("", BigDecimal.ONE);
         validateWithViolation(item);
     }
 
     @Test
-    public void testInvalidPriceWithNull() {
+    public void priceInvalidWhenNull() {
         final ItemDto item = new ItemDto("Item 1", null);
         validateWithViolation(item);
     }
 
     @Test
-    public void testInvalidPriceTooManyDigits() {
-        final ItemDto item = new ItemDto("Item 1", new BigDecimal("9999999999999999"));
+    public void priceValidWhenIntegerDigitsLessThanLimit() {
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("1"));
+        validateWithNoViolations(item);
+    }
+
+    @Test
+    public void priceValidWhenIntegerDigitsMatchesLimit() {
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("1234567890"));
+        validateWithNoViolations(item);
+    }
+
+    @Test
+    public void priceInvalidWhenIntegerDigitsExceedsLimit() {
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("12345678901"));
         validateWithViolation(item);
     }
 
     @Test
-    public void testInvalidPriceTooManyDecimals() {
-        final ItemDto item = new ItemDto("Item 1", new BigDecimal("10.000"));
-        validateWithViolation(item);
-    }
-
-    @Test
-    public void testPriceWithNoDecimals() {
+    public void priceValidWithZeroDecimals() {
         final ItemDto item = new ItemDto("Item 1", new BigDecimal("10"));
         validateWithNoViolations(item);
     }
 
     @Test
-    public void testPriceWithDecimals() {
+    public void priceValidWithOneDecimal() {
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("10.0"));
+        validateWithNoViolations(item);
+    }
+
+    @Test
+    public void priceValidWithTwo() {
         final ItemDto item = new ItemDto("Item 1", new BigDecimal("10.00"));
         validateWithNoViolations(item);
     }
 
     @Test
-    public void testUpdatePrice() throws NotFoundException, InvalidPriceException {
+    public void priceInvalidWithMoreThanTwoDecimals() {
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("10.000"));
+        validateWithViolation(item);
+    }
+
+    @Test
+    public void priceIsInvalidWithNegativeValue() {
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("-10.00"));
+        validateWithViolation(item);
+    }
+
+    @Test
+    public void priceValidAtOnePence() {
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("0.01"));
+        validateWithNoViolations(item);
+    }
+
+    @Test
+    public void priceValidAtZero() {
+        final ItemDto item = new ItemDto("Item 1", new BigDecimal("0.01"));
+        validateWithNoViolations(item);
+    }
+
+    @Test
+    public void updatePriceOfItemReturnsSuccessfulOkResponse() throws NotFoundException, InvalidPriceException {
         final ItemDto item = new ItemDto("Item 1", new BigDecimal("32.85"));
 
         when(mockService.updatePrice(anyLong(), any())).thenReturn(item);

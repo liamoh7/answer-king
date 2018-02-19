@@ -36,7 +36,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    public void testFindAllWithItems() {
+    public void getAllItemsWhenItemsAreAvailableReturnsListOfItems() {
         final List<Item> entities = Arrays.asList(
                 new Item("Test 1", BigDecimal.ZERO),
                 new Item("Test 3", BigDecimal.ONE),
@@ -60,7 +60,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    public void testFindAllEmptyList() {
+    public void getAllItemsWhenNoneAreAvailableReturnsEmptyList() {
         final List<Item> entities = Collections.emptyList();
         final List<ItemDto> expectedDtos = Collections.emptyList();
 
@@ -78,7 +78,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    public void testSave() {
+    public void savingValidItemReturnsItemMappedToDto() {
         final Item item = new Item("Test 1", BigDecimal.ONE);
         final ItemDto expectedDto = new ItemDto("Test 1", BigDecimal.ONE);
 
@@ -97,7 +97,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    public void testGet() throws NotFoundException {
+    public void getItemWithValidIdReturnsItem() throws NotFoundException {
         final Item item = new Item("Test 1", BigDecimal.ZERO);
         final ItemDto expectedDto = new ItemDto("Test 1", BigDecimal.ZERO);
 
@@ -114,14 +114,14 @@ public class ItemServiceTest {
     }
 
     @Test(expected = NotFoundException.class)
-    public void testUpdateItemPriceWithInvalidIdThrowsException() throws NotFoundException, InvalidPriceException {
+    public void updatingItemPriceWithInvalidIdThrowsException() throws NotFoundException, InvalidPriceException {
         when(mockRepository.findOne(anyLong())).thenReturn(null);
 
         itemService.updatePrice(0, BigDecimal.ONE);
     }
 
     @Test(expected = InvalidPriceException.class)
-    public void testUpdateItemWithNullPriceThrowsException() throws NotFoundException, InvalidPriceException {
+    public void updatingItemWithNullPriceThrowsException() throws NotFoundException, InvalidPriceException {
         when(mockRepository.findOne(anyLong())).thenReturn(new Item());
 
         itemService.updatePrice(0L, null);
@@ -131,7 +131,7 @@ public class ItemServiceTest {
     }
 
     @Test(expected = InvalidPriceException.class)
-    public void testUpdateItemWithNegativePriceThrowsException() throws NotFoundException, InvalidPriceException {
+    public void updatingItemWithNegativePriceThrowsException() throws NotFoundException, InvalidPriceException {
         when(mockRepository.findOne(anyLong())).thenReturn(new Item());
 
         itemService.updatePrice(0L, new BigDecimal("-1.00"));
@@ -141,7 +141,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    public void testUpdatePrice() throws NotFoundException, InvalidPriceException {
+    public void updatingPriceWithValidInfoReturnsItemWithNewPrice() throws NotFoundException, InvalidPriceException {
         final ItemDto item = new ItemDto("Item 1", new BigDecimal("32.00"));
 
         when(mockRepository.findOne(anyLong())).thenReturn(new Item("Item 1", BigDecimal.TEN));

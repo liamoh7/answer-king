@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Digits;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -18,7 +19,8 @@ public class ItemDto {
     private String name;
 
     @NotNull
-    @Digits(integer = 15, fraction = 2)
+    @Min(value = 0)
+    @Digits(integer = 10, fraction = 2)
     private BigDecimal price;
 
     public ItemDto() {

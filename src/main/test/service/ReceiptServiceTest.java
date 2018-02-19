@@ -42,16 +42,16 @@ public class ReceiptServiceTest {
     }
 
     @Test(expected = NotFoundException.class)
-    public void testCreateWithInvalidOrderThrowsException() throws NotFoundException, InvalidPaymentException {
+    public void creatingReceiptWithInvalidOrderThrowsException() throws NotFoundException, InvalidPaymentException {
         receiptService.create(null, BigDecimal.ONE);
     }
 
     @Test(expected = InvalidPaymentException.class)
-    public void testCreateWithInvalidPaymentThrowsException() throws NotFoundException, InvalidPaymentException {
+    public void creatingReceiptWithInvalidPaymentThrowsException() throws NotFoundException, InvalidPaymentException {
         receiptService.create(new Order(), null);
     }
 
-    public void testCreateRepositorySuccess() throws NotFoundException, InvalidPaymentException {
+    public void creatingReceiptSuccessfully() throws NotFoundException, InvalidPaymentException {
         final ReceiptDto expectedReceipt = new ReceiptDto();
 
         when(mockOrderMapper.mapToEntity(any(OrderDto.class))).thenReturn(new Order());
@@ -70,7 +70,7 @@ public class ReceiptServiceTest {
     }
 
     @Test
-    public void testGetAllWithItems() {
+    public void getAllReceiptsReturnsListOfReceiptsWhenAvailable() {
         final List<Receipt> receipts = Arrays.asList(
                 new Receipt(BigDecimal.ONE, new Order()),
                 new Receipt(BigDecimal.TEN, new Order()));
@@ -92,7 +92,7 @@ public class ReceiptServiceTest {
     }
 
     @Test
-    public void testGetAllEmptyList() {
+    public void getAllReceiptsReturnsEmptyListWhenNoneAreAvailable() {
         final List<Receipt> entities = Collections.emptyList();
         final List<ReceiptDto> expectedDtos = Collections.emptyList();
 
@@ -109,7 +109,7 @@ public class ReceiptServiceTest {
     }
 
     @Test
-    public void testGet() throws NotFoundException {
+    public void getReceiptWithValidIdReturnsReceipt() throws NotFoundException {
         final Receipt receipt = new Receipt();
         final ReceiptDto expectedDto = new ReceiptDto();
 
@@ -126,13 +126,13 @@ public class ReceiptServiceTest {
     }
 
     @Test(expected = NotFoundException.class)
-    public void testGetThrowsNotFoundInvalidID() throws NotFoundException {
+    public void getReceiptWithInvalidIdThrowsException() throws NotFoundException {
         when(mockRepository.findOne(anyLong())).thenReturn(null);
         receiptService.get(0L);
     }
 
     @Test
-    public void testCalculateZeroChange() throws NotFoundException, InvalidPaymentException {
+    public void whenCalculatingChangeWhenOrderTotalIsEqualToPaymentAmountZeroIsReturned() throws NotFoundException, InvalidPaymentException {
         final BigDecimal paymentAmount = new BigDecimal("20.00");
         final BigDecimal orderTotal = new BigDecimal("20.00");
 
@@ -150,7 +150,7 @@ public class ReceiptServiceTest {
     }
 
     @Test
-    public void testCalculateChange() throws NotFoundException, InvalidPaymentException {
+    public void whenCalculatingChangeWhenOrderTotalIsGreaterThanPaymentAmountCorrectChangeIsReturned() throws NotFoundException, InvalidPaymentException {
         final BigDecimal paymentAmount = new BigDecimal("20.00");
         final BigDecimal orderTotal = new BigDecimal("30.99");
 

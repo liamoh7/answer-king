@@ -33,7 +33,7 @@ public class ReceiptControllerTest {
     }
 
     @Test
-    public void testGet() throws NotFoundException {
+    public void getReceiptReturnsValidReceiptSuccessfully() throws NotFoundException {
         final ReceiptDto expectedReceipt = new ReceiptDto();
         when(mockReceiptService.getMapped(anyLong())).thenReturn(expectedReceipt);
 
@@ -46,7 +46,7 @@ public class ReceiptControllerTest {
     }
 
     @Test
-    public void testGetAll() {
+    public void getAllReceiptsReturnsSuccesfully() {
         final List<ReceiptDto> receipts = Arrays.asList(new ReceiptDto(), new ReceiptDto());
         when(mockReceiptService.getAll()).thenReturn(receipts);
 

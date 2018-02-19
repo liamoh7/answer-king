@@ -45,12 +45,11 @@ public class OrderServiceTest {
 
     @Before
     public void setUp() {
-        orderService = new OrderService(mockOrderRepository, mockItemRepository,
-                mockOrderMapper, mockPaymentService);
+        orderService = new OrderService(mockOrderRepository, mockItemRepository, mockOrderMapper, mockPaymentService);
     }
 
     @Test
-    public void testGetAllEmptyList() {
+    public void getAllOrdersWhenNoneAvailableReturnsAnEmptyList() {
         when(mockOrderRepository.findAll()).thenReturn(new ArrayList<>());
 
         final List<OrderDto> actualOrders = orderService.getAll();
@@ -63,7 +62,7 @@ public class OrderServiceTest {
     }
 
     @Test
-    public void testGetAllWithItemsInList() {
+    public void getAllOrdersWhenAvailableReturnsSuccessfully() {
         final List<OrderDto> expectedOrders = Arrays.asList(new OrderDto(), new OrderDto());
         when(mockOrderRepository.findAll()).thenReturn(Arrays.asList(new Order(), new Order()));
         when(mockOrderMapper.mapToDto(anyList())).thenReturn(Arrays.asList(new OrderDto(), new OrderDto()));
@@ -78,7 +77,7 @@ public class OrderServiceTest {
     }
 
     @Test(expected = NotFoundException.class)
-    public void testAddItemNullItemRetrievedFails() throws NotFoundException {
+    public void retrievalOfInvalidItemIdsWhenAddingToOrdersThrowsException() throws NotFoundException {
         when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order());
         when(mockItemRepository.findOne(anyLong())).thenReturn(null);
 
@@ -91,7 +90,7 @@ public class OrderServiceTest {
     }
 
     @Test(expected = NotFoundException.class)
-    public void testAddItemNullOrderRetrievedFails() throws NotFoundException {
+    public void unavailableOrderWhenAddingItemToItThrowsException() throws NotFoundException {
         when(mockOrderRepository.findOne(anyLong())).thenReturn(null);
 
         orderService.addItem(1L, 1L, 1);
@@ -101,7 +100,7 @@ public class OrderServiceTest {
     }
 
     @Test
-    public void testAddItem() throws NotFoundException {
+    public void addingItemToOrderSuccefully() throws NotFoundException {
         final Order order = new Order(false, new BigDecimal("100.00"), null);
         final Item item = new Item("Test Item", new BigDecimal("100.00"));
         final LineItem lineItem = new LineItem(new BigDecimal("100.00"), 1, order, item);
@@ -125,7 +124,7 @@ public class OrderServiceTest {
     }
 
     @Test
-    public void testAddItemWithQuantityLessThanOne() throws NotFoundException {
+    public void addingItemWhenQuantityLessThanOneIsSpecfiedDefaultsToOne() throws NotFoundException {
         final Order order = new Order(false, new BigDecimal("100.00"), null);
         final Item item = new Item("Test Item", new BigDecimal("100.00"));
         final LineItem lineItem = new LineItem(new BigDecimal("100.00"), 1, order, item);
@@ -148,12 +147,8 @@ public class OrderServiceTest {
         verifyAddItem();
     }
 
-    @Test
-    public void testAddItemWithQuantityLessThan1() {
-    }
-
     @Test(expected = NotFoundException.class)
-    public void testAddItemWithInvalidOrder() throws NotFoundException {
+    public void addingItemToAnInvalidOrderThrowsException() throws NotFoundException {
         when(mockOrderRepository.findOne(0L)).thenReturn(null);
 
         orderService.addItem(0L, 0L, 1);
@@ -164,7 +159,7 @@ public class OrderServiceTest {
     }
 
     @Test
-    public void testSave() {
+    public void validOrderSavedSuccessfully() {
         final OrderDto expectedOrder = new OrderDto(false, BigDecimal.ZERO, null);
 
         when(mockOrderMapper.mapToEntity(any(OrderDto.class))).thenReturn(new Order(false, BigDecimal.ZERO, null));
@@ -182,14 +177,14 @@ public class OrderServiceTest {
     }
 
     @Test(expected = NotFoundException.class)
-    public void testGetMappedThrowsExceptionInvalid() throws NotFoundException {
+    public void gettingMappedOrderWithInvalidOrderIDThrowsException() throws NotFoundException {
         when(mockOrderRepository.findOne(anyLong())).thenReturn(null);
 
         orderService.getMapped(0L);
     }
 
     @Test
-    public void testGetMappedMapsCorrectly() throws NotFoundException {
+    public void gettingMappedOrderWithValidIdReturnsValidOrder() throws NotFoundException {
         final OrderDto expectedOrder = new OrderDto(false, BigDecimal.TEN, null);
 
         when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.TEN, null));
@@ -205,7 +200,7 @@ public class OrderServiceTest {
     }
 
     @Test(expected = NotFoundException.class)
-    public void testPaymentInvalidOrderId() throws NotFoundException, InvalidPaymentException {
+    public void payingForOrderWhenTheOrderIdInvalidThrowsException() throws NotFoundException, InvalidPaymentException {
         when(mockOrderRepository.findOne(anyLong())).thenReturn(null);
 
         orderService.pay(0, BigDecimal.TEN);
@@ -216,7 +211,7 @@ public class OrderServiceTest {
     }
 
     @Test
-    public void testPaySuccess() throws NotFoundException, InvalidPaymentException {
+    public void payingForOrderWithValidInformationReturnsReceipt() throws NotFoundException, InvalidPaymentException {
         final ReceiptDto expectedReceipt = new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, null));
 
         when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.TEN, null));
@@ -232,7 +227,7 @@ public class OrderServiceTest {
     }
 
     @Test(expected = InvalidPaymentException.class)
-    public void testPaymentNullAmount() throws NotFoundException, InvalidPaymentException {
+    public void payingForOrderWithNullPaymentAmountThrowsException() throws NotFoundException, InvalidPaymentException {
         orderService.pay(0, null);
 
         verifyZeroInteractions(mockOrderRepository);
@@ -240,7 +235,7 @@ public class OrderServiceTest {
     }
 
     @Test(expected = InvalidPaymentException.class)
-    public void testPaymentNegativeAmount() throws NotFoundException, InvalidPaymentException {
+    public void payingForOrderWithNegativePaymentAmountThrowsException() throws NotFoundException, InvalidPaymentException {
         orderService.pay(0, new BigDecimal("-1.00"));
 
         verifyZeroInteractions(mockOrderRepository);
