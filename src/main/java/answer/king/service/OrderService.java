@@ -89,6 +89,9 @@ public class OrderService {
 
         if (order.getItems().isEmpty()) throw new InvalidPaymentException();
 
-        return paymentService.pay(payment, order);
+        ReceiptDto receiptDto =  paymentService.pay(payment, order);
+        System.out.println("Payment: " + receiptDto.getOrder().isPaid());
+
+        return receiptDto;
     }
 }

@@ -50,12 +50,15 @@ public class ReceiptService {
 
         final BigDecimal change = calculateChange(paymentAmount, order.getTotal());
 
+        System.out.println(order.isPaid());
+
         Receipt receipt = new Receipt();
         receipt.setOrder(order);
         receipt.setPayment(paymentAmount);
         receipt.setChange(change);
 
         receipt = repository.save(receipt);
+        System.out.println("Receipt: " + receipt.getOrder().isPaid());
         return mapper.mapToDto(receipt);
     }
 

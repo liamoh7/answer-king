@@ -28,9 +28,11 @@ public class PaymentService {
             throw new InvalidPaymentException();
         }
 
-        if(order.isPaid()) throw new OrderAlreadyPaidException();
+        if (order.isPaid()) throw new OrderAlreadyPaidException();
         order.setPaid(true);
 
-        return receiptService.create(order, paymentAmount);
+        ReceiptDto receiptDto = receiptService.create(order, paymentAmount);
+        System.out.println("Receipt DTO: " + receiptDto.getOrder().isPaid());
+        return receiptDto;
     }
 }

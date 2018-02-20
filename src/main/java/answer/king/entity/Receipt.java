@@ -1,5 +1,7 @@
 package answer.king.entity;
 
+import org.hibernate.annotations.Cascade;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -13,7 +15,8 @@ public class Receipt {
     private long id;
     private BigDecimal payment;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)
+    @OneToOne
     private Order order;
 
     private BigDecimal change;

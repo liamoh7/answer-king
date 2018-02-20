@@ -13,12 +13,12 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-    private Boolean paid = false;
+    private long id;
+    private boolean paid;
 
     @NotNull
     @Digits(integer = 10, fraction = 2)
-    private BigDecimal total = BigDecimal.ZERO;
+    private BigDecimal total;
 
     @OneToMany(mappedBy = "order", cascade = {CascadeType.ALL, CascadeType.PERSIST})
     private List<LineItem> items = new ArrayList<>();
@@ -26,13 +26,13 @@ public class Order {
     public Order() {
     }
 
-    public Order(Boolean paid, BigDecimal total, List<LineItem> items) {
+    public Order(boolean paid, BigDecimal total, List<LineItem> items) {
         this.paid = paid;
         this.total = total;
         this.items = items;
     }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
@@ -40,11 +40,11 @@ public class Order {
         this.id = id;
     }
 
-    public Boolean isPaid() {
+    public boolean isPaid() {
         return paid;
     }
 
-    public void setPaid(Boolean paid) {
+    public void setPaid(boolean paid) {
         this.paid = paid;
     }
 
