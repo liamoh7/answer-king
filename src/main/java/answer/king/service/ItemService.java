@@ -3,9 +3,11 @@ package answer.king.service;
 import answer.king.dto.ItemDto;
 import answer.king.entity.Item;
 import answer.king.error.InvalidPriceException;
+import answer.king.error.InvalidSearchCriteriaException;
 import answer.king.error.NotFoundException;
 import answer.king.repo.ItemRepository;
 import answer.king.service.mapper.Mapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,11 +22,13 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
     private final Mapper<ItemDto, Item> itemMapper;
+    private final ItemSearchRepository searchRepository;
 
     @Autowired
-    public ItemService(ItemRepository itemRepository, Mapper<ItemDto, Item> itemMapper) {
+    public ItemService(ItemRepository itemRepository, Mapper<ItemDto, Item> itemMapper, ItemSearchRepository searchRepository) {
         this.itemRepository = itemRepository;
         this.itemMapper = itemMapper;
+        this.searchRepository = searchRepository;
     }
 
     public Item get(long id) throws NotFoundException {
@@ -58,5 +62,14 @@ public class ItemService {
         item.setPrice(updatedPrice);
         item = itemRepository.save(item);
         return itemMapper.mapToDto(item);
+    }
+
+    public List<ItemDto> search(String term) throws InvalidSearchCriteriaException {
+        if (StringUtils.isEmpty(term)) throw new InvalidSearchCriteriaException();
+        term = term.trim();
+
+        final List<Item> items = searchRepository.searchWithName(term);
+
+        return itemMapper.mapToDto(items);
     }
 }

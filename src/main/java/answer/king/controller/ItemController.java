@@ -2,6 +2,7 @@ package answer.king.controller;
 
 import answer.king.dto.ItemDto;
 import answer.king.error.InvalidPriceException;
+import answer.king.error.InvalidSearchCriteriaException;
 import answer.king.error.NotFoundException;
 import answer.king.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,5 +48,10 @@ public class ItemController {
     public ResponseEntity<ItemDto> updatePrice(@PathVariable(value = "id") long id, @RequestBody BigDecimal updatedPrice) throws NotFoundException, InvalidPriceException {
         // find item, update price, return item to user
         return ResponseEntity.ok(itemService.updatePrice(id, updatedPrice));
+    }
+
+    @RequestMapping(path = "/search", method = RequestMethod.POST)
+    public ResponseEntity<List<ItemDto>> search(@RequestParam(value = "q") String term) throws InvalidSearchCriteriaException {
+        return ResponseEntity.ok(itemService.search(term));
     }
 }

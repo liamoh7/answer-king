@@ -69,4 +69,13 @@ public class ItemDto {
     public int hashCode() {
         return Objects.hash(id, name, price);
     }
+
+    @Override
+    public String toString() {
+        return "ItemDto{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", price=" + price +
+                '}';
+    }
 }

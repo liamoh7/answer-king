@@ -5,6 +5,7 @@ import answer.king.entity.Item;
 import answer.king.error.InvalidPriceException;
 import answer.king.error.NotFoundException;
 import answer.king.repo.ItemRepository;
+import answer.king.service.ItemSearchRepository;
 import answer.king.service.ItemService;
 import answer.king.service.mapper.Mapper;
 import org.junit.Before;
@@ -28,11 +29,13 @@ public class ItemServiceTest {
     private ItemRepository mockRepository;
     @Mock
     private Mapper<ItemDto, Item> mockMapper;
+    @Mock
+    private ItemSearchRepository mockSearchRepository;
     private ItemService itemService;
 
     @Before
     public void setUp() {
-        itemService = new ItemService(mockRepository, mockMapper);
+        itemService = new ItemService(mockRepository, mockMapper, mockSearchRepository);
     }
 
     @Test

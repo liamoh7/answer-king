@@ -1,14 +1,14 @@
 package answer.king.entity;
 
-import org.hibernate.validator.constraints.Length;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
 
 import javax.persistence.*;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Objects;
 
 @Entity
+@Indexed
 @Table(name = "T_ITEM")
 public class Item {
 
@@ -16,12 +16,8 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @NotNull
-    @Length(min = 1)
+    @Field
     private String name;
-
-    @NotNull
-    @Digits(integer = 15, fraction = 2)
     private BigDecimal price;
 
     public Item() {
