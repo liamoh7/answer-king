@@ -1,6 +1,5 @@
 package answer.king.service;
 
-import answer.king.dto.OrderDto;
 import answer.king.dto.ReceiptDto;
 import answer.king.entity.Order;
 import answer.king.entity.Receipt;
@@ -21,13 +20,11 @@ public class ReceiptService {
 
     private final ReceiptRepository repository;
     private final Mapper<ReceiptDto, Receipt> mapper;
-    private final Mapper<OrderDto, Order> orderMapper;
 
     @Autowired
-    public ReceiptService(ReceiptRepository repository, Mapper<ReceiptDto, Receipt> mapper, Mapper<OrderDto, Order> orderMapper) {
+    public ReceiptService(ReceiptRepository repository, Mapper<ReceiptDto, Receipt> mapper) {
         this.repository = repository;
         this.mapper = mapper;
-        this.orderMapper = orderMapper;
     }
 
     public List<ReceiptDto> getAll() {
@@ -50,15 +47,12 @@ public class ReceiptService {
 
         final BigDecimal change = calculateChange(paymentAmount, order.getTotal());
 
-        System.out.println(order.isPaid());
-
         Receipt receipt = new Receipt();
         receipt.setOrder(order);
         receipt.setPayment(paymentAmount);
         receipt.setChange(change);
 
         receipt = repository.save(receipt);
-        System.out.println("Receipt: " + receipt.getOrder().isPaid());
         return mapper.mapToDto(receipt);
     }
 

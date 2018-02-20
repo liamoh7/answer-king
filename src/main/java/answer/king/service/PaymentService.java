@@ -31,8 +31,6 @@ public class PaymentService {
         if (order.isPaid()) throw new OrderAlreadyPaidException();
         order.setPaid(true);
 
-        ReceiptDto receiptDto = receiptService.create(order, paymentAmount);
-        System.out.println("Receipt DTO: " + receiptDto.getOrder().isPaid());
-        return receiptDto;
+        return receiptService.create(order, paymentAmount);
     }
 }

@@ -8,7 +8,6 @@ import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
 import answer.king.repo.ReceiptRepository;
 import answer.king.service.ReceiptService;
-import answer.king.service.mapper.OrderMapper;
 import answer.king.service.mapper.ReceiptMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,13 +31,11 @@ public class ReceiptServiceTest {
     private ReceiptRepository mockRepository;
     @Mock
     private ReceiptMapper mockReceiptMapper;
-    @Mock
-    private OrderMapper mockOrderMapper;
     private ReceiptService receiptService;
 
     @Before
     public void setUp() {
-        receiptService = new ReceiptService(mockRepository, mockReceiptMapper, mockOrderMapper);
+        receiptService = new ReceiptService(mockRepository, mockReceiptMapper);
     }
 
     @Test(expected = NotFoundException.class)
@@ -54,17 +51,14 @@ public class ReceiptServiceTest {
     public void creatingReceiptSuccessfully() throws NotFoundException, InvalidPaymentException {
         final ReceiptDto expectedReceipt = new ReceiptDto();
 
-        when(mockOrderMapper.mapToEntity(any(OrderDto.class))).thenReturn(new Order());
         when(mockRepository.save(any(Receipt.class))).thenReturn(new Receipt());
         when(mockReceiptMapper.mapToDto(any(Receipt.class))).thenReturn(new ReceiptDto());
 
         final ReceiptDto actualReceipt = receiptService.create(new Order(), BigDecimal.TEN);
 
         assertEquals(expectedReceipt, actualReceipt);
-        verify(mockOrderMapper, times(1)).mapToEntity(any(OrderDto.class));
         verify(mockRepository, times(1)).save(any(Receipt.class));
         verify(mockReceiptMapper, times(1)).mapToDto(any(Receipt.class));
-        verifyNoMoreInteractions(mockOrderMapper);
         verifyNoMoreInteractions(mockRepository);
         verifyNoMoreInteractions(mockReceiptMapper);
     }

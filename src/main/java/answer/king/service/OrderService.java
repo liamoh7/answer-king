@@ -9,7 +9,7 @@ import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
 import answer.king.error.OrderAlreadyPaidException;
 import answer.king.repo.OrderRepository;
-import answer.king.service.mapper.OrderMapper;
+import answer.king.service.mapper.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,12 +23,12 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ItemService itemService;
-    private final OrderMapper orderMapper;
+    private final Mapper<OrderDto, Order> orderMapper;
     private final PaymentService paymentService;
 
     @Autowired
     public OrderService(OrderRepository orderRepository, ItemService itemService,
-                        OrderMapper orderMapper, PaymentService paymentService) {
+                        Mapper<OrderDto, Order> orderMapper, PaymentService paymentService) {
         this.orderRepository = orderRepository;
         this.itemService = itemService;
         this.orderMapper = orderMapper;
