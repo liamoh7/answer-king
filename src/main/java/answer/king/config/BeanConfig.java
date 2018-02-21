@@ -1,4 +1,4 @@
-package answer.king;
+package answer.king.config;
 
 import answer.king.entity.Account;
 import answer.king.repo.AccountRepository;
@@ -6,27 +6,17 @@ import com.google.common.base.Predicate;
 import org.dozer.DozerBeanMapper;
 import org.h2.server.web.WebServlet;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.context.annotation.Configuration;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import static com.google.common.base.Predicates.or;
 import static springfox.documentation.builders.PathSelectors.regex;
 
-@EnableSwagger2
-@SpringBootApplication
-@EnableTransactionManagement
-public class Application extends SpringBootServletInitializer {
-
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
+@Configuration
+public class BeanConfig {
 
     @Bean
     public CommandLineRunner init(AccountRepository accountRepository) {

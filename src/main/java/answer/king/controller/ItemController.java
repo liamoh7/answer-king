@@ -52,6 +52,7 @@ public class ItemController {
 
     @RequestMapping(path = "/search", method = RequestMethod.POST)
     public ResponseEntity<List<ItemDto>> search(@RequestParam(value = "q") String term) throws InvalidSearchCriteriaException {
+        System.out.println(term);
         return ResponseEntity.ok(itemService.search(term));
     }
 }
