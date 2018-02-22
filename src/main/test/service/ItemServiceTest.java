@@ -5,8 +5,8 @@ import answer.king.dto.CreatableItemDto;
 import answer.king.dto.ItemDto;
 import answer.king.entity.Category;
 import answer.king.entity.Item;
+import answer.king.error.InvalidCriteriaException;
 import answer.king.error.InvalidPriceException;
-import answer.king.error.InvalidSearchCriteriaException;
 import answer.king.error.NotFoundException;
 import answer.king.repo.ItemRepository;
 import answer.king.repo.ItemSearchRepository;
@@ -204,8 +204,8 @@ public class ItemServiceTest {
         verifyNoMoreInteractions(mockMapper);
     }
 
-    @Test(expected = InvalidSearchCriteriaException.class)
-    public void searchForItemNameWithEmptyQueryStringThrowsException() throws InvalidSearchCriteriaException {
+    @Test(expected = InvalidCriteriaException.class)
+    public void searchForItemNameWithEmptyQueryStringThrowsException() throws InvalidCriteriaException {
         itemService.searchByItemName("");
     }
 }

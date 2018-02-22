@@ -1,12 +1,13 @@
 package answer.king.config;
 
-import answer.king.entity.Account;
-import answer.king.repo.AccountRepository;
+import answer.king.service.AuthenticationService;
 import com.google.common.base.Predicate;
 import org.dozer.DozerBeanMapper;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 
@@ -17,14 +18,14 @@ import static springfox.documentation.builders.PathSelectors.regex;
 public class BeanConfig {
 
     @Bean
-    public CommandLineRunner init(AccountRepository accountRepository) {
-        return args -> accountRepository.save(new Account("liam", "password"));
+    public CommandLineRunner init(AuthenticationService service) {
+        return args -> service.createAccount("liam", "password");
     }
 
-//    @Bean
-//    public ServletRegistrationBean h2ServletRegistration() {
-//        return new ServletRegistrationBean(new WebServlet(), "/h2/*");
-//    }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public DozerBeanMapper modelMapper() {
@@ -33,7 +34,8 @@ public class BeanConfig {
 
     @Bean
     public Docket swaggerSpringMvcPlugin() {
-        Predicate<String> apiPaths = or(regex("/order.*"), regex("/item.*"), (regex("/receipt.*")));
+        Predicate<String> apiPaths = or(regex("/order.*"), regex("/item.*"),
+                (regex("/receipt.*")), (regex("/categories.*")));
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
                 .paths(apiPaths)

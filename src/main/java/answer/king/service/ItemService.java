@@ -4,8 +4,8 @@ import answer.king.dto.CreatableItemDto;
 import answer.king.dto.ItemDto;
 import answer.king.entity.Category;
 import answer.king.entity.Item;
+import answer.king.error.InvalidCriteriaException;
 import answer.king.error.InvalidPriceException;
-import answer.king.error.InvalidSearchCriteriaException;
 import answer.king.error.NotFoundException;
 import answer.king.repo.ItemRepository;
 import answer.king.repo.ItemSearchRepository;
@@ -83,7 +83,7 @@ public class ItemService {
         return itemMapper.mapToDto(item);
     }
 
-    public List<ItemDto> searchByItemName(String term) throws InvalidSearchCriteriaException {
+    public List<ItemDto> searchByItemName(String term) throws InvalidCriteriaException {
         final List<Item> items = searchRepository.searchWithName(trimOrThrow(term));
         return itemMapper.mapToDto(items);
     }
@@ -93,8 +93,8 @@ public class ItemService {
         return itemMapper.mapToDto(items);
     }
 
-    private String trimOrThrow(String str) throws InvalidSearchCriteriaException {
-        if (StringUtils.isEmpty(str)) throw new InvalidSearchCriteriaException();
+    private String trimOrThrow(String str) throws InvalidCriteriaException {
+        if (StringUtils.isEmpty(str)) throw new InvalidCriteriaException();
         return str.trim();
     }
 }

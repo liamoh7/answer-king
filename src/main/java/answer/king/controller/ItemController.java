@@ -2,8 +2,8 @@ package answer.king.controller;
 
 import answer.king.dto.CreatableItemDto;
 import answer.king.dto.ItemDto;
+import answer.king.error.InvalidCriteriaException;
 import answer.king.error.InvalidPriceException;
-import answer.king.error.InvalidSearchCriteriaException;
 import answer.king.error.NotFoundException;
 import answer.king.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ public class ItemController {
     }
 
     @RequestMapping(path = "/search", method = RequestMethod.POST)
-    public ResponseEntity<List<ItemDto>> searchByItemName(@RequestParam(value = "q") String term) throws InvalidSearchCriteriaException {
+    public ResponseEntity<List<ItemDto>> searchByItemName(@RequestParam(value = "q") String term) throws InvalidCriteriaException {
         return ResponseEntity.ok(itemService.searchByItemName(term));
     }
 

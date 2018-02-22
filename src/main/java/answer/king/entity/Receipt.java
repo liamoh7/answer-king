@@ -19,6 +19,7 @@ public class Receipt {
     @OneToOne
     private Order order;
 
+    @Column(name = "c_change")
     private BigDecimal change;
 
     public Receipt() {
