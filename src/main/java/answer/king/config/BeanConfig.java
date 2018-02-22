@@ -4,9 +4,7 @@ import answer.king.entity.Account;
 import answer.king.repo.AccountRepository;
 import com.google.common.base.Predicate;
 import org.dozer.DozerBeanMapper;
-import org.h2.server.web.WebServlet;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.spi.DocumentationType;
@@ -23,10 +21,10 @@ public class BeanConfig {
         return args -> accountRepository.save(new Account("liam", "password"));
     }
 
-    @Bean
-    public ServletRegistrationBean h2ServletRegistration() {
-        return new ServletRegistrationBean(new WebServlet(), "/h2/*");
-    }
+//    @Bean
+//    public ServletRegistrationBean h2ServletRegistration() {
+//        return new ServletRegistrationBean(new WebServlet(), "/h2/*");
+//    }
 
     @Bean
     public DozerBeanMapper modelMapper() {
