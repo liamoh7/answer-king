@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static answer.king.util.Models.throwNotFoundIfNull;
+
 @Service
 @Transactional
 public class ReceiptService {
@@ -33,8 +35,7 @@ public class ReceiptService {
 
     public Receipt get(long id) throws NotFoundException {
         final Receipt receipt = repository.findOne(id);
-        if (receipt == null) throw new NotFoundException();
-        return receipt;
+        return throwNotFoundIfNull(receipt);
     }
 
     public ReceiptDto getMapped(long id) throws NotFoundException {
@@ -42,7 +43,7 @@ public class ReceiptService {
     }
 
     public ReceiptDto create(Order order, BigDecimal paymentAmount) throws InvalidPaymentException, NotFoundException {
-        if (order == null) throw new NotFoundException();
+        throwNotFoundIfNull(order);
         if (paymentAmount == null) throw new InvalidPaymentException();
 
         final BigDecimal change = calculateChange(paymentAmount, order.getTotal());

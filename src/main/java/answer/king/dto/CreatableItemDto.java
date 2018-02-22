@@ -7,9 +7,8 @@ import javax.validation.constraints.Digits;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.Objects;
 
-public class ItemDto {
+public class CreatableItemDto {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private long id;
@@ -25,21 +24,9 @@ public class ItemDto {
 
     private String description;
 
-    private CategoryDto category;
+    private long categoryId;
 
-    public ItemDto() {
-    }
-
-    public ItemDto(String name, BigDecimal price) {
-        this.name = name;
-        this.price = price;
-    }
-
-    public ItemDto(String name, BigDecimal price, String description, CategoryDto category) {
-        this.name = name;
-        this.price = price;
-        this.description = description;
-        this.category = category;
+    public CreatableItemDto() {
     }
 
     public long getId() {
@@ -74,39 +61,22 @@ public class ItemDto {
         this.description = description;
     }
 
-    public CategoryDto getCategory() {
-        return category;
+    public long getCategoryId() {
+        return categoryId;
     }
 
-    public void setCategory(CategoryDto category) {
-        this.category = category;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ItemDto)) return false;
-        ItemDto itemDto = (ItemDto) o;
-        return id == itemDto.id &&
-                Objects.equals(name, itemDto.name) &&
-                Objects.equals(price, itemDto.price) &&
-                Objects.equals(description, itemDto.description) &&
-                Objects.equals(category, itemDto.category);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, price, description, category);
+    public void setCategoryId(long categoryId) {
+        this.categoryId = categoryId;
     }
 
     @Override
     public String toString() {
-        return "ItemDto{" +
+        return "CreatableItemDto{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", price=" + price +
                 ", description='" + description + '\'' +
-                ", category=" + category +
+                ", categoryId=" + categoryId +
                 '}';
     }
 }

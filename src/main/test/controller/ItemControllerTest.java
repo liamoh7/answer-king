@@ -1,6 +1,8 @@
 package controller;
 
 import answer.king.controller.ItemController;
+import answer.king.dto.CategoryDto;
+import answer.king.dto.CreatableItemDto;
 import answer.king.dto.ItemDto;
 import answer.king.error.InvalidPriceException;
 import answer.king.error.NotFoundException;
@@ -13,18 +15,17 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
+import static util.ValidatorUtil.validateWithNoViolations;
+import static util.ValidatorUtil.validateWithViolation;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ItemControllerTest {
@@ -32,12 +33,10 @@ public class ItemControllerTest {
     @Mock
     private ItemService mockService;
     private ItemController itemController;
-    private Validator validator;
 
     @Before
     public void setUp() {
         itemController = new ItemController(mockService);
-        validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
     @Test
@@ -81,27 +80,38 @@ public class ItemControllerTest {
     }
 
     @Test
-    public void itemCreateSucceedsWithValidItemData() {
-        final ItemDto item = new ItemDto("Test Item", BigDecimal.ONE);
-        when(mockService.save(any(ItemDto.class))).thenReturn(item);
+    public void itemCreateSucceedsWithValidItemData() throws NotFoundException {
+        final CreatableItemDto creatableItemDto = new CreatableItemDto();
+        creatableItemDto.setName("Test 1");
+        creatableItemDto.setDescription("Description");
+        creatableItemDto.setPrice(BigDecimal.ONE);
+        creatableItemDto.setCategoryId(0);
 
-        final ResponseEntity<ItemDto> response = itemController.create(new ItemDto());
+        final ItemDto item = new ItemDto();
+        item.setName("Test 1");
+        item.setDescription("Description");
+        item.setPrice(BigDecimal.ONE);
+        item.setCategory(new CategoryDto("Fruit & Veg"));
 
-        validateWithNoViolations(item);
-        assertTrue(response.getStatusCode() == HttpStatus.CREATED);
+        when(mockService.create(any(CreatableItemDto.class))).thenReturn(item);
+
+        final ResponseEntity<ItemDto> response = itemController.create(creatableItemDto);
+
+        validateWithNoViolations(creatableItemDto);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(response.getHeaders().getLocation(), URI.create("/item/0"));
-        verify(mockService, times(1)).save(any(ItemDto.class));
+        verify(mockService, times(1)).create(any(CreatableItemDto.class));
         verifyNoMoreInteractions(mockService);
     }
 
     @Test
-    public void itemCreateReturningNullReturnsBadRequestResponse() {
-        when(mockService.save(any(ItemDto.class))).thenReturn(null);
+    public void itemCreateReturningNullReturnsBadRequestResponse() throws NotFoundException {
+        when(mockService.create(any(CreatableItemDto.class))).thenReturn(null);
 
-        final ResponseEntity<ItemDto> response = itemController.create(new ItemDto());
+        final ResponseEntity<ItemDto> response = itemController.create(new CreatableItemDto());
 
         assertTrue(response.getStatusCode() == HttpStatus.BAD_REQUEST);
-        verify(mockService, times(1)).save(any(ItemDto.class));
+        verify(mockService, times(1)).create(any(CreatableItemDto.class));
         verifyNoMoreInteractions(mockService);
     }
 
@@ -194,20 +204,5 @@ public class ItemControllerTest {
         assertTrue(response.getStatusCode() == HttpStatus.OK);
         verify(mockService, times(1)).updatePrice(anyLong(), any());
         verifyNoMoreInteractions(mockService);
-    }
-
-    private void validateWithViolation(ItemDto item) {
-        validateWithViolations(item, 1);
-    }
-
-    private void validateWithNoViolations(ItemDto item) {
-        final Set<ConstraintViolation<ItemDto>> violations = validator.validate(item);
-        assertTrue(violations.isEmpty());
-    }
-
-    private void validateWithViolations(ItemDto item, int violationCount) {
-        final Set<ConstraintViolation<ItemDto>> violations = validator.validate(item);
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.size() == violationCount);
     }
 }

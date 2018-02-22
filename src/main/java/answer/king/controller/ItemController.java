@@ -1,5 +1,6 @@
 package answer.king.controller;
 
+import answer.king.dto.CreatableItemDto;
 import answer.king.dto.ItemDto;
 import answer.king.error.InvalidPriceException;
 import answer.king.error.InvalidSearchCriteriaException;
@@ -31,8 +32,8 @@ public class ItemController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<ItemDto> create(@Valid @RequestBody ItemDto item) {
-        final ItemDto itemResponse = itemService.save(item);
+    public ResponseEntity<ItemDto> create(@Valid @RequestBody CreatableItemDto item) throws NotFoundException {
+        final ItemDto itemResponse = itemService.create(item);
         if (itemResponse == null) {
             return ResponseEntity.badRequest().build();
         }
@@ -46,13 +47,16 @@ public class ItemController {
 
     @RequestMapping(path = "/{id}", method = RequestMethod.PUT)
     public ResponseEntity<ItemDto> updatePrice(@PathVariable(value = "id") long id, @RequestBody BigDecimal updatedPrice) throws NotFoundException, InvalidPriceException {
-        // find item, update price, return item to user
         return ResponseEntity.ok(itemService.updatePrice(id, updatedPrice));
     }
 
     @RequestMapping(path = "/search", method = RequestMethod.POST)
-    public ResponseEntity<List<ItemDto>> search(@RequestParam(value = "q") String term) throws InvalidSearchCriteriaException {
-        System.out.println(term);
-        return ResponseEntity.ok(itemService.search(term));
+    public ResponseEntity<List<ItemDto>> searchByItemName(@RequestParam(value = "q") String term) throws InvalidSearchCriteriaException {
+        return ResponseEntity.ok(itemService.searchByItemName(term));
+    }
+
+    @RequestMapping(path = "/category/{id}", method = RequestMethod.POST)
+    public ResponseEntity<List<ItemDto>> searchByCategoryId(@PathVariable(value = "id") long categoryId) {
+        return ResponseEntity.ok(itemService.searchByCategory(categoryId));
     }
 }

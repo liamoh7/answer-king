@@ -1,11 +1,16 @@
 package service;
 
+import answer.king.dto.CategoryDto;
+import answer.king.dto.CreatableItemDto;
 import answer.king.dto.ItemDto;
+import answer.king.entity.Category;
 import answer.king.entity.Item;
 import answer.king.error.InvalidPriceException;
+import answer.king.error.InvalidSearchCriteriaException;
 import answer.king.error.NotFoundException;
 import answer.king.repo.ItemRepository;
-import answer.king.service.ItemSearchRepository;
+import answer.king.repo.ItemSearchRepository;
+import answer.king.service.CategoryService;
 import answer.king.service.ItemService;
 import answer.king.service.mapper.Mapper;
 import org.junit.Before;
@@ -31,11 +36,14 @@ public class ItemServiceTest {
     private Mapper<ItemDto, Item> mockMapper;
     @Mock
     private ItemSearchRepository mockSearchRepository;
+    @Mock
+    private CategoryService mockCategoryService;
+
     private ItemService itemService;
 
     @Before
     public void setUp() {
-        itemService = new ItemService(mockRepository, mockMapper, mockSearchRepository);
+        itemService = new ItemService(mockRepository, mockMapper, mockSearchRepository, mockCategoryService);
     }
 
     @Test
@@ -94,6 +102,42 @@ public class ItemServiceTest {
         verify(mockMapper, times(1)).mapToEntity(expectedDto);
         verify(mockRepository, times(1)).save(item);
         verify(mockMapper, times(1)).mapToDto(item);
+        verifyNoMoreInteractions(mockRepository);
+        verifyNoMoreInteractions(mockMapper);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void createItemWithInvalidCategory() throws NotFoundException {
+        when(mockCategoryService.get(anyLong())).thenThrow(NotFoundException.class);
+
+        itemService.create(new CreatableItemDto());
+    }
+
+    @Test
+    public void createItemReturnsMappedDto() throws NotFoundException {
+        final Category category = new Category("Fruit & Veg");
+        final CategoryDto categoryDto = new CategoryDto("Fruit & Veg");
+
+        final Item item = new Item("Apples", BigDecimal.ONE, "Desc", category);
+        final ItemDto itemDto = new ItemDto("Apples", BigDecimal.ONE, "Desc", categoryDto);
+
+        when(mockCategoryService.get(anyLong())).thenReturn(category);
+        when(mockRepository.save(any(Item.class))).thenReturn(item);
+        when(mockMapper.mapToDto(any(Item.class))).thenReturn(itemDto);
+
+        final CreatableItemDto creatableItem = new CreatableItemDto();
+        creatableItem.setName("Apples");
+        creatableItem.setPrice(BigDecimal.ONE);
+        creatableItem.setDescription("Desc");
+        creatableItem.setCategoryId(2);
+
+        final ItemDto actual = itemService.create(creatableItem);
+
+        assertEquals(itemDto, actual);
+        verify(mockCategoryService, times(1)).get(anyLong());
+        verify(mockRepository, times(1)).save(item);
+        verify(mockMapper, times(1)).mapToDto(item);
+        verifyNoMoreInteractions(mockCategoryService);
         verifyNoMoreInteractions(mockRepository);
         verifyNoMoreInteractions(mockMapper);
     }
@@ -158,5 +202,10 @@ public class ItemServiceTest {
         verify(mockMapper, times(1)).mapToDto(any(Item.class));
         verifyNoMoreInteractions(mockRepository);
         verifyNoMoreInteractions(mockMapper);
+    }
+
+    @Test(expected = InvalidSearchCriteriaException.class)
+    public void searchForItemNameWithEmptyQueryStringThrowsException() throws InvalidSearchCriteriaException {
+        itemService.searchByItemName("");
     }
 }

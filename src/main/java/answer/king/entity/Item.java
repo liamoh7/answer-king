@@ -2,6 +2,7 @@ package answer.king.entity;
 
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -20,12 +21,25 @@ public class Item {
     private String name;
     private BigDecimal price;
 
+    private String description;
+
+    @OneToOne(cascade = {CascadeType.ALL})
+    @IndexedEmbedded
+    private Category category;
+
     public Item() {
     }
 
     public Item(String name, BigDecimal price) {
         this.name = name;
         this.price = price;
+    }
+
+    public Item(String name, BigDecimal price, String description, Category category) {
+        this.name = name;
+        this.price = price;
+        this.description = description;
+        this.category = category;
     }
 
     public Long getId() {
@@ -52,18 +66,47 @@ public class Item {
         this.price = price;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Item)) return false;
         Item item = (Item) o;
-        return Objects.equals(id, item.id) &&
+        return id == item.id &&
                 Objects.equals(name, item.name) &&
-                Objects.equals(price, item.price);
+                Objects.equals(price, item.price) &&
+                Objects.equals(description, item.description) &&
+                Objects.equals(category, item.category);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, price);
+        return Objects.hash(id, name, price, description, category);
+    }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", price=" + price +
+                ", description='" + description + '\'' +
+                ", category=" + category +
+                '}';
     }
 }

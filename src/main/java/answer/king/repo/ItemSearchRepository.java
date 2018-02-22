@@ -1,4 +1,4 @@
-package answer.king.service;
+package answer.king.repo;
 
 import answer.king.entity.Item;
 import org.apache.lucene.search.Query;
@@ -28,6 +28,27 @@ public class ItemSearchRepository {
         // noinspection unchecked
         return fm.createFullTextQuery(query, Item.class).getResultList();
     }
+
+    public List<Item> searchByCategoryName(String categoryName) {
+        final FullTextEntityManager fm = getTextEntityManager();
+        final QueryBuilder qb = fm.getSearchFactory().buildQueryBuilder().forEntity(Item.class).get();
+
+        final Query query = qb.keyword().onField("category.name").matching(categoryName).createQuery();
+
+        // noinspection unchecked
+        return fm.createFullTextQuery(query, Item.class).getResultList();
+    }
+
+    public List<Item> searchByCategoryId(long categoryId) {
+        final FullTextEntityManager fm = getTextEntityManager();
+        final QueryBuilder qb = fm.getSearchFactory().buildQueryBuilder().forEntity(Item.class).get();
+
+        final Query query = qb.keyword().onField("category.id").matching(categoryId).createQuery();
+
+        // noinspection unchecked
+        return fm.createFullTextQuery(query, Item.class).getResultList();
+    }
+
 
     private FullTextEntityManager getTextEntityManager() {
         return Search.getFullTextEntityManager(entityManager);

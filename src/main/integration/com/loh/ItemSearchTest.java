@@ -1,7 +1,9 @@
 package com.loh;
 
 import answer.king.Application;
+import answer.king.entity.Category;
 import answer.king.entity.Item;
+import answer.king.repo.CategoryRepository;
 import answer.king.repo.ItemRepository;
 import org.junit.After;
 import org.junit.Before;
@@ -38,6 +40,8 @@ public class ItemSearchTest {
 
     @Autowired
     private ItemRepository itemRepository;
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Autowired
     private WebApplicationContext context;
@@ -82,17 +86,41 @@ public class ItemSearchTest {
                 .andExpect(jsonPath("$", hasSize(0)));
     }
 
+    @Test
+    @WithMockUser
+    public void searchForItemsByCategoryId() throws Exception {
+        addTestData();
+
+        final Category expectedCategory = new Category("Drinks");
+        expectedCategory.setId(2);
+
+        mockMvc.perform(post("/item/category/2"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].name").value("Orange Juice"))
+                .andExpect(jsonPath("$[0].price").value(new BigDecimal("25.99")))
+                .andExpect(jsonPath("$[0].category").value(expectedCategory))
+                .andExpect(jsonPath("$[1].name").value("Coca Cola"))
+                .andExpect(jsonPath("$[1].price").value(new BigDecimal("25.99")))
+                .andExpect(jsonPath("$[1].category").value(expectedCategory));
+    }
+
     @After
     public void tearDown() {
         // tear down as rollback not working correctly
         itemRepository.deleteAll();
+        categoryRepository.deleteAll();
     }
 
     private void addTestData() {
-        final Item item1 = new Item("Item 1", new BigDecimal("25.99"));
-        final Item item2 = new Item("Item 2", new BigDecimal("25.99"));
-        final Item item3 = new Item("Orange Juice", new BigDecimal("25.99"));
-        final Item item4 = new Item("Coca Cola", new BigDecimal("25.99"));
+        final Category drinks = new Category("Drinks");
+        final Category misc = new Category("Misc");
+
+        final Item item1 = new Item("Item 1", new BigDecimal("25.99"), "desc", misc);
+        final Item item2 = new Item("Item 2", new BigDecimal("25.99"), "desc", misc);
+        final Item item3 = new Item("Orange Juice", new BigDecimal("25.99"), "desc", drinks);
+        final Item item4 = new Item("Coca Cola", new BigDecimal("25.99"), "desc", drinks);
 
         itemRepository.save(Arrays.asList(item1, item2, item3, item4));
     }

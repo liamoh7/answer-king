@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
+import static answer.king.util.Models.throwNotFoundIfNull;
+
 @Service
 @Transactional
 public class PaymentService {
@@ -21,7 +23,7 @@ public class PaymentService {
     }
 
     public ReceiptDto pay(BigDecimal paymentAmount, Order order) throws NotFoundException, InvalidPaymentException, OrderAlreadyPaidException {
-        if (order == null) throw new NotFoundException();
+        throwNotFoundIfNull(order);
 
         // validate payments
         if (paymentAmount == null || paymentAmount.compareTo(order.getTotal()) < 0) {
