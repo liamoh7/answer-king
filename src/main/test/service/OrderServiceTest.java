@@ -22,10 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -112,13 +109,16 @@ public class OrderServiceTest {
     public void addingItemToOrderSuccessfully() throws NotFoundException, OrderAlreadyPaidException {
         final Order order = new Order(false, new BigDecimal("100.00"), null);
         final Item item = new Item("Test Item", new BigDecimal("100.00"));
+        item.setId(0L);
+
         final LineItem lineItem = new LineItem(new BigDecimal("100.00"), 1, order, item);
-        order.getItems().add(lineItem);
+        order.getItems().put(item.getId(), lineItem);
 
         final OrderDto orderDto = new OrderDto(false, new BigDecimal("100.00"), null);
         final ItemDto itemDto = new ItemDto("Test Item", new BigDecimal("100.00"));
         final LineItemDto lineItemDto = new LineItemDto(new BigDecimal("100.00"), 1, orderDto, itemDto);
-        orderDto.getItems().add(lineItemDto);
+        itemDto.setId(0L);
+        orderDto.getItems().put(item.getId(), lineItemDto);
 
         when(mockItemService.get(anyLong())).thenReturn(item);
         when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
@@ -128,7 +128,7 @@ public class OrderServiceTest {
         final OrderDto actualOrder = orderService.addItem(0, 0, 1);
 
         assertFalse(actualOrder.getItems().isEmpty());
-        assertEquals(lineItemDto, actualOrder.getItems().get(0));
+        assertEquals(lineItemDto, actualOrder.getItems().get(0L));
         verifyAddItem();
     }
 
@@ -136,13 +136,15 @@ public class OrderServiceTest {
     public void addingItemWhenQuantityLessThanOneIsSpecfiedDefaultsToOne() throws NotFoundException, OrderAlreadyPaidException {
         final Order order = new Order(false, new BigDecimal("100.00"), null);
         final Item item = new Item("Test Item", new BigDecimal("100.00"));
+        item.setId(0L);
         final LineItem lineItem = new LineItem(new BigDecimal("100.00"), 1, order, item);
-        order.getItems().add(lineItem);
+        order.getItems().put(item.getId(), lineItem);
 
         final OrderDto orderDto = new OrderDto(false, new BigDecimal("100.00"), null);
         final ItemDto itemDto = new ItemDto("Test Item", new BigDecimal("100.00"));
+        itemDto.setId(0L);
         final LineItemDto lineItemDto = new LineItemDto(new BigDecimal("100.00"), 1, orderDto, itemDto);
-        orderDto.getItems().add(lineItemDto);
+        orderDto.getItems().put(item.getId(), lineItemDto);
 
         when(mockItemService.get(anyLong())).thenReturn(item);
         when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
@@ -152,7 +154,7 @@ public class OrderServiceTest {
         final OrderDto actualOrder = orderService.addItem(0, 0, 0);
 
         assertFalse(actualOrder.getItems().isEmpty());
-        assertEquals(lineItemDto, actualOrder.getItems().get(0));
+        assertEquals(lineItemDto, actualOrder.getItems().get(0L));
         verifyAddItem();
     }
 
@@ -221,11 +223,11 @@ public class OrderServiceTest {
 
     @Test
     public void payingForOrderWithValidInformationReturnsReceipt() throws NotFoundException, InvalidPaymentException, OrderAlreadyPaidException {
-        final ReceiptDto receiptDto = new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, Collections.singletonList(new LineItemDto())));
+        final ReceiptDto receiptDto = new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, Collections.singletonMap(0L, new LineItemDto())));
 
-        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.TEN, Collections.singletonList(new LineItem())));
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.TEN, Collections.singletonMap(0L, new LineItem())));
         when(mockPaymentService.pay(any(BigDecimal.class), any(Order.class)))
-                .thenReturn(new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, Collections.singletonList(new LineItemDto()))));
+                .thenReturn(new ReceiptDto(BigDecimal.TEN, new OrderDto(true, BigDecimal.TEN, Collections.singletonMap(0L, new LineItemDto()))));
 
 
         final ReceiptDto actualReceipt = orderService.pay(0, BigDecimal.TEN);
@@ -255,7 +257,7 @@ public class OrderServiceTest {
 
     @Test(expected = InvalidPaymentException.class)
     public void payingForOrderWithNoItemsShouldResultInNoPaymentOccurring() throws NotFoundException, InvalidPaymentException, OrderAlreadyPaidException {
-        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.ZERO, new ArrayList<>()));
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.ZERO, new HashMap<>()));
 
         orderService.pay(0, BigDecimal.TEN);
     }

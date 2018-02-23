@@ -64,13 +64,17 @@ public class OrderService {
     }
 
     private OrderDto addItemToOrder(Order order, Item item, int quantity) {
-        final LineItem lineItem = new LineItem();
+        // check if lineitem exists for current item
+        final LineItem lineItem = order.getItems().getOrDefault(item.getId(), new LineItem());
+
         lineItem.setItem(item);
         lineItem.setOrder(order);
-        lineItem.setQuantity(quantity);
         lineItem.setPrice(item.getPrice());
 
-        order.getItems().add(lineItem);
+        // if new item, quantity = 0, otherwise existing quantity
+        lineItem.setQuantity(lineItem.getQuantity() + quantity);
+
+        order.getItems().put(item.getId(), lineItem);
 
         final BigDecimal totalItemPrice = item.getPrice().multiply(BigDecimal.valueOf(quantity));
         order.setTotal(order.getTotal().add(totalItemPrice));
@@ -89,9 +93,6 @@ public class OrderService {
 
         if (order.getItems().isEmpty()) throw new InvalidPaymentException();
 
-        ReceiptDto receiptDto =  paymentService.pay(payment, order);
-        System.out.println("Payment: " + receiptDto.getOrder().isPaid());
-
-        return receiptDto;
+        return paymentService.pay(payment, order);
     }
 }

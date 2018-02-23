@@ -4,8 +4,8 @@ import javax.persistence.*;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Table(name = "T_ORDER")
@@ -21,12 +21,13 @@ public class Order {
     private BigDecimal total;
 
     @OneToMany(mappedBy = "order", cascade = {CascadeType.ALL, CascadeType.PERSIST})
-    private List<LineItem> items = new ArrayList<>();
+//    private List<LineItem> items = new ArrayList<>();
+    private Map<Long, LineItem> items = new HashMap<>();
 
     public Order() {
     }
 
-    public Order(boolean paid, BigDecimal total, List<LineItem> items) {
+    public Order(boolean paid, BigDecimal total, Map<Long, LineItem> items) {
         this.paid = paid;
         this.total = total;
         this.items = items;
@@ -56,12 +57,12 @@ public class Order {
         this.total = total;
     }
 
-    public List<LineItem> getItems() {
-        if (items == null) items = new ArrayList<>();
+    public Map<Long, LineItem> getItems() {
+        if (items == null) items = new HashMap<>();
         return items;
     }
 
-    public void setItems(List<LineItem> lineItems) {
+    public void setItems(Map<Long, LineItem> lineItems) {
         this.items = lineItems;
     }
 }

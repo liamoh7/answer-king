@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class OrderDto {
@@ -20,12 +20,13 @@ public class OrderDto {
     @Digits(integer = 10, fraction = 2)
     private BigDecimal total = BigDecimal.ZERO;
 
-    private List<LineItemDto> items;
+//    private List<LineItemDto> items;
+    private Map<Long, LineItemDto> items;
 
     public OrderDto() {
     }
 
-    public OrderDto(boolean paid, BigDecimal total, List<LineItemDto> items) {
+    public OrderDto(boolean paid, BigDecimal total, Map<Long, LineItemDto> items) {
         this.paid = paid;
         this.total = total;
         this.items = items;
@@ -55,12 +56,12 @@ public class OrderDto {
         this.total = total;
     }
 
-    public List<LineItemDto> getItems() {
-        if (items == null) items = new ArrayList<>();
+    public Map<Long, LineItemDto> getItems() {
+        if (items == null) items = new HashMap<>();
         return items;
     }
 
-    public void setItems(List<LineItemDto> items) {
+    public void setItems(Map<Long, LineItemDto> items) {
         this.items = items;
     }
 
