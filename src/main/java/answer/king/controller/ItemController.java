@@ -55,7 +55,7 @@ public class ItemController {
         return ResponseEntity.ok(itemService.searchByItemName(term));
     }
 
-    @RequestMapping(path = "/category/{id}", method = RequestMethod.POST)
+    @RequestMapping(path = "/category/{id}", method = RequestMethod.GET)
     public ResponseEntity<List<ItemDto>> searchByCategoryId(@PathVariable(value = "id") long categoryId) {
         return ResponseEntity.ok(itemService.searchByCategory(categoryId));
     }
