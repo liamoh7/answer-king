@@ -5,6 +5,7 @@ import answer.king.dto.ReceiptDto;
 import answer.king.entity.Item;
 import answer.king.entity.LineItem;
 import answer.king.entity.Order;
+import answer.king.error.InvalidCriteriaException;
 import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
 import answer.king.error.OrderAlreadyPaidException;
@@ -82,6 +83,27 @@ public class OrderService {
         // persist and map to dto
         order = orderRepository.save(order);
         return orderMapper.mapToDto(order);
+    }
+
+    public OrderDto removeItemFromOrder(long orderId, long itemId, int quantity) throws NotFoundException, InvalidCriteriaException, OrderAlreadyPaidException {
+        final Order order = get(orderId);
+        final LineItem item = order.getItems().get(itemId);
+
+        if (order.isPaid()) throw new OrderAlreadyPaidException();
+        if (item == null || quantity <= 0) throw new InvalidCriteriaException();
+        if (quantity > item.getQuantity()) {
+            // remove lineitem completely as all quantity should be removed
+            quantity = item.getQuantity();
+            order.getItems().remove(itemId);
+        } else {
+            item.setQuantity(item.getQuantity() - quantity);
+        }
+
+        // update order balance
+        final BigDecimal total = order.getTotal().subtract(item.getPrice().multiply(new BigDecimal(quantity)));
+        order.setTotal(total);
+
+        return orderMapper.mapToDto(orderRepository.save(order));
     }
 
     public ReceiptDto pay(long id, BigDecimal payment) throws InvalidPaymentException, NotFoundException, OrderAlreadyPaidException {

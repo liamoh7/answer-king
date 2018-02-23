@@ -7,6 +7,7 @@ import answer.king.dto.ReceiptDto;
 import answer.king.entity.Item;
 import answer.king.entity.LineItem;
 import answer.king.entity.Order;
+import answer.king.error.InvalidCriteriaException;
 import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
 import answer.king.error.OrderAlreadyPaidException;
@@ -18,6 +19,7 @@ import answer.king.service.mapper.OrderMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -267,6 +269,105 @@ public class OrderServiceTest {
         when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.ZERO, null));
 
         orderService.pay(0, BigDecimal.TEN);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void whenRemovingItemFromInvalidOrderThrowException() throws InvalidCriteriaException, NotFoundException, OrderAlreadyPaidException {
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(null);
+
+        orderService.removeItemFromOrder(0, 0, 0);
+    }
+
+    @Test(expected = OrderAlreadyPaidException.class)
+    public void whenRemovingItemFromAnAlreadyPaidOrderThrowException() throws InvalidCriteriaException, NotFoundException, OrderAlreadyPaidException {
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(true, BigDecimal.TEN, null));
+
+        orderService.removeItemFromOrder(0, 0, 0);
+    }
+
+    @Test(expected = InvalidCriteriaException.class)
+    public void whenRemovingItemWithInvalidItemIdInvalidThrowException() throws InvalidCriteriaException, NotFoundException, OrderAlreadyPaidException {
+        final Order order = mock(Order.class);
+
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
+        when(order.getItems()).thenReturn(Collections.emptyMap());
+
+        orderService.removeItemFromOrder(0, 0, 0);
+    }
+
+    @Test(expected = InvalidCriteriaException.class)
+    public void whenRemovingItemWithQuantityEqualToZeroThrowException() throws InvalidCriteriaException, NotFoundException, OrderAlreadyPaidException {
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.TEN,
+                Collections.singletonMap(0L, new LineItem())));
+
+        orderService.removeItemFromOrder(0, 0, 0);
+    }
+
+    @Test(expected = InvalidCriteriaException.class)
+    public void whenRemovingItemWithQuantityLessThanZeroThrowException() throws InvalidCriteriaException, NotFoundException, OrderAlreadyPaidException {
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(new Order(false, BigDecimal.TEN,
+                Collections.singletonMap(0L, new LineItem())));
+
+        orderService.removeItemFromOrder(0, 0, -1);
+    }
+
+    @Test
+    public void whenRemovingItemFromOrderWithQuantityGreaterThanActualQuantityAllItemsAreRemoved() throws InvalidCriteriaException, NotFoundException, OrderAlreadyPaidException {
+        final Map<Long, LineItem> map = new HashMap<>();
+        map.put(0L, new LineItem(new BigDecimal("15.00"), 2));
+
+        final Order order = new Order(false, new BigDecimal("30.00"), map);
+
+        final ArgumentCaptor<Order> orderSave = ArgumentCaptor.forClass(Order.class);
+
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
+        when(mockOrderRepository.save(any(Order.class))).thenReturn(order);
+        when(mockOrderMapper.mapToDto(any(Order.class))).thenReturn(null);
+
+        orderService.removeItemFromOrder(0, 0, 6);
+
+        verify(mockOrderRepository, times(1)).findOne(anyLong());
+        verify(mockOrderRepository).save(orderSave.capture());
+        final Order captured = orderSave.getValue();
+
+        verify(mockOrderMapper, times(1)).mapToDto(captured);
+
+        verifyNoMoreInteractions(mockOrderRepository);
+        verifyNoMoreInteractions(mockItemService);
+        verifyNoMoreInteractions(mockOrderMapper);
+
+        assertEquals(0, captured.getItems().size());
+        assertEquals(new BigDecimal("0.00"), order.getTotal());
+    }
+
+    @Test
+    public void whenRemovingItemFromOrderWithQuantityLessThanLineItemQuantityItemsAreRemoved() throws InvalidCriteriaException, NotFoundException, OrderAlreadyPaidException {
+        final Map<Long, LineItem> map = new HashMap<>();
+        map.put(0L, new LineItem(new BigDecimal("15.00"), 5));
+
+        final Order order = new Order(false, new BigDecimal("75.00"), map);
+
+        final ArgumentCaptor<Order> orderSave = ArgumentCaptor.forClass(Order.class);
+
+        when(mockOrderRepository.findOne(anyLong())).thenReturn(order);
+        when(mockOrderRepository.save(any(Order.class))).thenReturn(order);
+        when(mockOrderMapper.mapToDto(any(Order.class))).thenReturn(null);
+
+        orderService.removeItemFromOrder(0, 0, 3);
+
+        verify(mockOrderRepository, times(1)).findOne(anyLong());
+        verify(mockOrderRepository).save(orderSave.capture());
+        final Order captured = orderSave.getValue();
+
+        verify(mockOrderMapper, times(1)).mapToDto(captured);
+
+        verifyNoMoreInteractions(mockOrderRepository);
+        verifyNoMoreInteractions(mockItemService);
+        verifyNoMoreInteractions(mockOrderMapper);
+
+        assertEquals(2, captured.getItems().get(0L).getQuantity());
+        assertEquals(new BigDecimal("30.00"), order.getTotal());
+        assertEquals(1, captured.getItems().size());
     }
 
     private void verifyAddItem() throws NotFoundException {

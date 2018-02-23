@@ -2,6 +2,7 @@ package answer.king.controller;
 
 import answer.king.dto.OrderDto;
 import answer.king.dto.ReceiptDto;
+import answer.king.error.InvalidCriteriaException;
 import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
 import answer.king.error.OrderAlreadyPaidException;
@@ -44,6 +45,11 @@ public class OrderController {
     public ResponseEntity<OrderDto> addItem(@PathVariable("id") long id, @PathVariable("itemId") long itemId, @RequestBody int quantity) throws NotFoundException, OrderAlreadyPaidException {
         orderService.addItem(id, itemId, quantity);
         return ResponseEntity.created(URI.create("/item/" + itemId)).build();
+    }
+
+    @RequestMapping(value = "/{id}/removeItem/{itemId}", method = RequestMethod.PUT)
+    public ResponseEntity<OrderDto> removeItem(@PathVariable("id") long id, @PathVariable("itemId") long itemId, @RequestBody int quantity) throws NotFoundException, InvalidCriteriaException, OrderAlreadyPaidException {
+        return ResponseEntity.ok(orderService.removeItemFromOrder(id, itemId, quantity));
     }
 
     @RequestMapping(value = "/{id}/pay", method = RequestMethod.PUT)
