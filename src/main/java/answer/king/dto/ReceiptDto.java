@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public class ReceiptDto {
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private long id;
 
     @NotNull

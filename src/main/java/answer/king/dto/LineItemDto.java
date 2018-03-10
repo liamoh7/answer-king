@@ -11,7 +11,7 @@ import java.util.Objects;
 
 public class LineItemDto {
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private long id;
 
     @NotNull
