@@ -1,5 +1,6 @@
 package answer.king.controller;
 
+import answer.king.dto.CartItemDto;
 import answer.king.dto.OrderDto;
 import answer.king.dto.ReceiptDto;
 import answer.king.error.InvalidCriteriaException;
@@ -39,6 +40,12 @@ public class OrderController {
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ResponseEntity<OrderDto> get(@PathVariable(value = "id") long id) throws NotFoundException {
         return ResponseEntity.ok(orderService.getMapped(id));
+    }
+
+    @PutMapping(value = "/{id}/item")
+    public ResponseEntity<OrderDto> addItems(@PathVariable("id") long orderId, @RequestBody List<CartItemDto> items) throws NotFoundException, OrderAlreadyPaidException {
+        final OrderDto order = orderService.addItems(orderId, items);
+        return ResponseEntity.ok(order);
     }
 
     @RequestMapping(value = "/{id}/addItem/{itemId}", method = RequestMethod.PUT)

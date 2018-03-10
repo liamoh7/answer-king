@@ -1,5 +1,6 @@
 package answer.king.service;
 
+import answer.king.dto.CartItemDto;
 import answer.king.dto.OrderDto;
 import answer.king.dto.ReceiptDto;
 import answer.king.entity.Item;
@@ -55,8 +56,23 @@ public class OrderService {
         return orderMapper.mapToDto(entity);
     }
 
+    public OrderDto addItems(long orderId, List<CartItemDto> items) throws NotFoundException, OrderAlreadyPaidException {
+        final Order order = get(orderId);
+
+        OrderDto orderDto = null;
+        for (CartItemDto cartItem : items) {
+            orderDto = addItem(order, cartItem.getItemId(), cartItem.getQuantity());
+        }
+
+        return orderDto;
+    }
+
     public OrderDto addItem(long orderId, long itemId, int quantity) throws NotFoundException, OrderAlreadyPaidException {
         final Order order = get(orderId);
+        return addItem(order, itemId, quantity);
+    }
+
+    private OrderDto addItem(Order order, long itemId, int quantity) throws NotFoundException, OrderAlreadyPaidException {
         final Item item = itemService.get(itemId);
 
         if (order.isPaid()) throw new OrderAlreadyPaidException();
