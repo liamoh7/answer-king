@@ -37,7 +37,7 @@ public class ItemController {
         if (itemResponse == null) {
             return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.created(URI.create("/item/" + itemResponse.getId())).build();
+        return ResponseEntity.created(URI.create("/item/" + itemResponse.getId())).body(itemResponse);
     }
 
     @RequestMapping(path = "/{id}", method = RequestMethod.GET)
