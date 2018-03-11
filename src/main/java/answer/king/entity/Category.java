@@ -21,11 +21,18 @@ public class Category {
     @Field
     private String name;
 
+    private String description;
+
     public Category() {
     }
 
     public Category(String name) {
         this.name = name;
+    }
+
+    public Category(String name, String description) {
+        this.name = name;
+        this.description = description;
     }
 
     public long getId() {
@@ -44,18 +51,27 @@ public class Category {
         this.name = name;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Category)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         Category category = (Category) o;
         return id == category.id &&
-                Objects.equals(name, category.name);
+                Objects.equals(name, category.name) &&
+                Objects.equals(description, category.description);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name);
+        return Objects.hash(id, name, description);
     }
 
     @Override
@@ -63,6 +79,7 @@ public class Category {
         return "Category{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
                 '}';
     }
 }

@@ -15,6 +15,10 @@ public class CategoryDto {
     @Length(min = 1)
     private String name;
 
+    @NotNull
+    @Length(min = 1)
+    private String description;
+
     public CategoryDto() {
     }
 
@@ -38,18 +42,27 @@ public class CategoryDto {
         this.name = name;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof CategoryDto)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         CategoryDto that = (CategoryDto) o;
         return id == that.id &&
-                Objects.equals(name, that.name);
+                Objects.equals(name, that.name) &&
+                Objects.equals(description, that.description);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name);
+        return Objects.hash(id, name, description);
     }
 
     @Override
@@ -57,6 +70,7 @@ public class CategoryDto {
         return "CategoryDto{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
                 '}';
     }
 }
