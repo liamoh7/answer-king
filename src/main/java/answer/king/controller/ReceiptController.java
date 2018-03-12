@@ -5,10 +5,7 @@ import answer.king.error.NotFoundException;
 import answer.king.service.ReceiptService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -31,5 +28,10 @@ public class ReceiptController {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<ReceiptDto>> getAll() {
         return ResponseEntity.ok(receiptService.getAll());
+    }
+
+    @GetMapping(path = "/order/{id}")
+    public ResponseEntity<ReceiptDto> getReceiptByOrderId(@PathVariable(value = "id") long orderId) throws NotFoundException {
+        return ResponseEntity.ok(receiptService.getByOrderId(orderId));
     }
 }

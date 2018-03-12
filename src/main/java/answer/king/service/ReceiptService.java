@@ -5,6 +5,7 @@ import answer.king.entity.Order;
 import answer.king.entity.Receipt;
 import answer.king.error.InvalidPaymentException;
 import answer.king.error.NotFoundException;
+import answer.king.repo.OrderRepository;
 import answer.king.repo.ReceiptRepository;
 import answer.king.service.mapper.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +22,13 @@ import static answer.king.util.Models.throwNotFoundIfNull;
 public class ReceiptService {
 
     private final ReceiptRepository repository;
+    private final OrderRepository orderRepository;
     private final Mapper<ReceiptDto, Receipt> mapper;
 
     @Autowired
-    public ReceiptService(ReceiptRepository repository, Mapper<ReceiptDto, Receipt> mapper) {
+    public ReceiptService(ReceiptRepository repository, OrderRepository orderRepository, Mapper<ReceiptDto, Receipt> mapper) {
         this.repository = repository;
+        this.orderRepository = orderRepository;
         this.mapper = mapper;
     }
 
@@ -60,5 +63,11 @@ public class ReceiptService {
     private BigDecimal calculateChange(BigDecimal paymentAmount, BigDecimal orderTotal) {
         final BigDecimal change = paymentAmount.subtract(orderTotal);
         return change.signum() != -1 ? change : BigDecimal.ZERO;
+    }
+
+    public ReceiptDto getByOrderId(long orderId) throws NotFoundException {
+        final Order order = orderRepository.findOne(orderId);
+        throwNotFoundIfNull(order);
+        return getAll().stream().filter(r -> r.getOrder().getId() == order.getId()).findFirst().get();
     }
 }
