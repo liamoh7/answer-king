@@ -42,6 +42,12 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getMapped(id));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> delete(@PathVariable("id") long orderId) {
+        orderService.delete(orderId);
+        return ResponseEntity.ok().build();
+    }
+
     @PutMapping(value = "/{id}/item")
     public ResponseEntity<OrderDto> addItems(@PathVariable("id") long orderId, @RequestBody List<CartItemDto> items) throws NotFoundException, OrderAlreadyPaidException {
         final OrderDto order = orderService.addItems(orderId, items);

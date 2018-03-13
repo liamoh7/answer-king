@@ -133,4 +133,8 @@ public class OrderService {
 
         return paymentService.pay(payment, order);
     }
+
+    public void delete(long id) {
+        orderRepository.delete(id);
+    }
 }
